@@ -1,2 +1,5 @@
-# ecards
-WordPress eCards is a WordPress plugin used to send electronic cards (eCards) to friends. It can be implemented in a page, a post or the sidebar. https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
+# eCards Issue Tracker
+
+**Looking for testers and contributors!**
+
+This is an empty repository used for [ImagePress](https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/) plugin. Add bug reports, feature requests or simply ask a question.
