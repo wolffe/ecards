@@ -1,0 +1,99 @@
+#gb-ad-ecards {
+    color: #FFFFFF;
+    /* FlatUI Midnight Blue */
+    background-color: #2C3E50;
+    border-radius: 2px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+    margin: 16px 0;
+}
+#gb-ad-ecards a {
+    /* FlatUI Alizarin */
+    color: #E74C3C;
+}
+#gb-ad-ecards h4 {
+    font-weight: 300;
+    font-size: 1.2em;
+    line-height: 1.5;
+    margin: 8px 0;
+}
+#gb-ad-ecards .inside {
+    padding: 8px 24px 24px 24px;
+}
+#gb-ad-ecards .gb-footer {
+    color: #FFFFFF;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.15);
+}
+#gb-ad-ecards img {
+    width: 48px;
+}
+#gb-ad-ecards hr {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 0 none;
+}
+#gb-ad-ecards a.gb-documentation {
+    color: #F1C40F;
+}
+
+.ecards-stats {
+    text-align: center;
+    margin: 32px 0 16px 0;
+}
+.ecards-stats small {
+    color: #666666;
+    margin: 4px 0 0 0;
+    display: inline-block;
+}
+.ecards-inlinebar {
+    opacity: 1;
+}
+.ecards-inlinebar canvas {
+    vertical-align: bottom !important;
+    max-width: 100%;
+}
+
+.codor {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    font-size: 12px;
+    background-color: #FFFFFF;
+    display: inline-block;
+    padding: 2px 4px;
+    color: #0366d6;
+    border-radius: 3px;
+}
+
+
+
+/*
+ * Attach additional images to any post or page straight from Media Library
+ */
+#twp-attach-post-images-list-container {
+    max-height: 230px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+#twp-attach-post-images-list li {
+    position: relative;
+    width: 75px;
+    height: 75px;
+    float: left;
+    margin: 1px;
+    background: #000;
+}
+#twp-attach-post-images-list li img {
+    max-width: 100%;
+    max-height: 100%;
+}
+#twp-attach-post-images-list li a {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: block;
+    color: #E74C3C;
+    text-decoration: none;
+}
+#twp-attach-post-images-list li a:hover {
+    color: #C0392B;
+}

@@ -1,0 +1,94 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WordPress eCards\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-04-13 11:47-0000\n"
+"PO-Revision-Date: 2015-04-13 11:48-0000\n"
+"Last-Translator: Ciprian Popescu <getbutterfly@gmail.com>\n"
+"Language-Team: Ciprian Popescu <getbutterfly@gmail.com>\n"
+"Language: ro_RO\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e;_\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
+"2:1));\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Generator: Poedit 1.7.5\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../includes/page-options.php:26 ../includes/page-options.php:39
+#: ../includes/page-options.php:63
+msgid "Options updated successfully!"
+msgstr "Optiunile au fost actualizate cu success!\t"
+
+#: ../includes/page-options.php:87
+msgid "Home"
+msgstr "Acasa"
+
+#: ../includes/page-options.php:88
+msgid "Settings"
+msgstr "Optiuni"
+
+#: ../includes/page-options.php:89
+msgid "Email Options"
+msgstr "Optiuni email"
+
+#: ../includes/page-options.php:90
+msgid "Restrictions &amp; Payment"
+msgstr "Restrictii si plati"
+
+#: ../includes/page-options.php:91
+msgid "Diagnostics"
+msgstr "Diagnostic"
+
+#: ../wp-ecards.php:94
+msgid "eCards Sender"
+msgstr "Expeditor eCard"
+
+#: ../wp-ecards.php:360
+msgid "eCard sent successfully!"
+msgstr "Felicitarea a fost trimisa cu succes!"
+
+#: ../wp-ecards.php:445
+msgid "Upload image"
+msgstr "Incarca imagine"
+
+#: ../wp-ecards.php:448
+msgid "Your name"
+msgstr "Nume"
+
+#: ../wp-ecards.php:449
+msgid "Your email address"
+msgstr "Adresa email"
+
+#: ../wp-ecards.php:452
+msgid "Your friend's email address"
+msgstr "Adresa email prieten"
+
+#: ../wp-ecards.php:455
+msgid "eCard message"
+msgstr "Mesaj felicitare"
+
+#: ../wp-ecards.php:462
+msgid "Send a copy to self"
+msgstr "Trimite copie (CC)"
+
+#~ msgid "Statistics"
+#~ msgstr "Statistici"
+
+#~ msgid "eCard was not sent!"
+#~ msgstr "Felicitarea nu a fost trimisa!"
+
+#~ msgid "Wrong verification code!"
+#~ msgstr "Cod de verificare gresit!"
+
+#~ msgid "Type the first 3 letters of <strong>spam</strong>"
+#~ msgstr "Scrie primele 3 litere ale cuvantului <strong>spam</strong>"
+
+#~ msgid "Send eCard Now!"
+#~ msgstr "Trimite felicitare!"
+
+#~ msgid "Verification number"
+#~ msgstr "Numar de verificare"
