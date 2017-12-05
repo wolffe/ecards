@@ -4,7 +4,7 @@ Tags: akismet, ecard, electronic card, flash card, greeting card, paypal, postca
 License: GPLv3
 Requires at least: 4.6
 Tested up to: 4.9.1
-Stable tag: 4.4.1.1
+Stable tag: 4.4.1.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,6 +26,11 @@ There are two ways you can use this plugin:
 4. A new eCards menu will appear in WordPress with options, and general help
 
 == Changelog ==
+
+= 4.4.1.2 =
+* UPDATE: Code quality updates
+* UPDATE: Code performance updates
+* UPDATE: Code security updates
 
 = 4.4.1.1 =
 * UPDATE: Code quality updates

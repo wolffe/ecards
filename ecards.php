@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com
-Version: 4.4.1.1
+Version: 4.4.1.2
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
@@ -146,7 +146,7 @@ function eCardsInstall() {
     add_option('ecard_use_display', 'masonry');
 
     //
-    add_role('ecards_sender', __('eCards Sender', 'ecards'), array('read' =>  false, 'edit_posts' => false, 'delete_posts' => false));
+    add_role('ecards_sender', esc_html__('eCards Sender', 'ecards'), array('read' =>  false, 'edit_posts' => false, 'delete_posts' => false));
 
     //
     delete_option('ecard_include_content');
@@ -200,10 +200,9 @@ function p2v_hide($atts, $content = null) {
     if($p2v_who === '0') $p2v_capability = 0;
     if($p2v_who === '1') $p2v_capability = 1;
 
-    if(null != $content && ('0' === $p2v_capability || ($_GET['ecid'] + 600) > time())) {
+    if (null != $content && ('0' === $p2v_capability || ($_GET['ecid'] + 600) > time())) {
 		return do_shortcode($content);
-	}
-	else {
+	} else {
 		// get all post attachments
 		$output = '';
 		$args = array(
@@ -219,21 +218,21 @@ function p2v_hide($atts, $content = null) {
 		$attachments = get_posts($args);
 
         $ecard_image_size = get_option('ecard_image_size');
-        $ecard_image_size_email = get_option('ecard_image_size_email');
+        $ecardSizeEmail = get_option('ecard_image_size_email');
 
 		if ($attachments) {
             $output .= '<div role="radiogroup">';
-                foreach($attachments as $a) {
-                    $alt = get_post_meta($a->ID, '_wp_attachment_image_alt', true);
+                foreach($attachments as $attachedECard) {
+                    $alt = get_post_meta($attachedECard->ID, '_wp_attachment_image_alt', true);
                     if($alt != 'noselect') {
                         $output .= '<div class="ecard">';
-                            $large = wp_get_attachment_image_src($a->ID, $ecard_image_size_email);
-                            $thumb = wp_get_attachment_image($a->ID, $ecard_image_size);
+                            $large = wp_get_attachment_image_src($attachedECard->ID, $ecardSizeEmail);
+                            $thumb = wp_get_attachment_image($attachedECard->ID, $ecard_image_size);
                             if(get_option('ecard_label') == 0) {
-                                $output .= '<a href="' . $large[0] . '" class="ecards">' . $thumb . '</a><br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked><label for="ecard' . $a->ID . '"></label>';
+                                $output .= '<a href="' . $large[0] . '" class="ecards">' . $thumb . '</a><br><input type="radio" name="ecard_pick_me" id="ecard' . $attachedECard->ID . '" value="' . $attachedECard->ID . '" checked><label for="ecard' . $attachedECard->ID . '"></label>';
 							}
 							if(get_option('ecard_label') == 1) {
-                                $output .= '<label for="ecard' . $a->ID . '">' . $thumb . '<br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked></label>';
+                                $output .= '<label for="ecard' . $attachedECard->ID . '">' . $thumb . '<br><input type="radio" name="ecard_pick_me" id="ecard' . $attachedECard->ID . '" value="' . $attachedECard->ID . '" checked></label>';
 							}
                         $output .= '</div>';
                     }
@@ -250,9 +249,9 @@ function p2v_hide($atts, $content = null) {
 	}
 }
 
-function p2v_button($a) {
-	if($a['amount'] === '' || !is_numeric($a['amount']))
-		$a['amount'] = get_option('p2v_paypal_default_amount');
+function p2v_button($attributes) {
+	if($attributes['amount'] === '' || !is_numeric($attributes['amount']))
+		$attributes['amount'] = get_option('p2v_paypal_default_amount');
 
     $p2v_paypal_sandbox = get_option('p2v_paypal_sandbox');
     if($p2v_paypal_sandbox == 1)
@@ -268,7 +267,7 @@ function p2v_button($a) {
 			<input type="hidden" name="business" value="' . get_option('p2v_paypal_email') . '">
 			<input type="hidden" name="currency_code" value="' . get_option('p2v_paypal_currency') . '">
 			<input type="hidden" name="return" value="' . $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '?ecid=' . time() . '">
-			<input type="hidden" name="amount" value="' . $a['amount'] . '">
+			<input type="hidden" name="amount" value="' . $attributes['amount'] . '">
 			<input type="hidden" name="item_name" value="' . get_the_title() . '">
 			<input type="hidden" name="item_number" value="' . get_the_ID() . '">
 
@@ -308,7 +307,7 @@ function display_ecardMe() {
     //
 
     $ecard_body_toggle = get_option('ecard_body_toggle');
-    $ecard_image_size_email = get_option('ecard_image_size_email');
+    $ecardSizeEmail = get_option('ecard_image_size_email');
 
     // send eCard routine
     // since eCards 2.2.0
@@ -336,12 +335,11 @@ function display_ecardMe() {
         // end user attachment
 
         // gallery (attachments) mode
+        $ecard_pick_me = '';
         if (isset($_POST['ecard_pick_me']) && $no_attachments === 1) {
             $ecard_pick_me = sanitize_text_field($_POST['ecard_pick_me']);
-            $large = wp_get_attachment_image_src($ecard_pick_me, $ecard_image_size_email);
+            $large = wp_get_attachment_image_src($ecard_pick_me, $ecardSizeEmail);
             $ecard_pick_me = '<img src="' . $large[0] . '" alt="" style="max-width: 100%;">';
-        } else {
-            $ecard_pick_me = '';
         }
         //
 
@@ -357,9 +355,9 @@ function display_ecardMe() {
 
         $ecard_referer = esc_url($_POST['ecard_referer']);
         if (isset($_POST['ecard_pick_me'])) {
-            $ecard_pick_me_attachment = wp_get_attachment_link(sanitize_text_field($_POST['ecard_pick_me']), $ecard_image_size_email, true, false, $ecard_link_anchor);
+            $ecardAttachment = wp_get_attachment_link(sanitize_text_field($_POST['ecard_pick_me']), $ecardSizeEmail, true, false, $ecard_link_anchor);
         } else {
-            $ecard_pick_me_attachment = '';
+            $ecardAttachment = '';
         }
 
         // Dropbox image
@@ -370,7 +368,7 @@ function display_ecardMe() {
             if (!empty($ecard_pick_me)) {
                 $ecard_image = $ecard_pick_me;
             } else {
-                $image = wp_get_attachment_image_src(get_post_thumbnail_id(get_the_ID()), $ecard_image_size_email);
+                $image = wp_get_attachment_image_src(get_post_thumbnail_id(get_the_ID()), $ecardSizeEmail);
                 $ecard_image = '<img src="' . $image[0] . '" alt="" style="max-width: 100%;">';
             }
         }
@@ -382,7 +380,7 @@ function display_ecardMe() {
         $ecard_template = str_replace('[email]', $ecard_email_from, $ecard_template);
         $ecard_template = str_replace('[image]', $ecard_image, $ecard_template);
         $ecard_template = str_replace('[ecard-message]', $ecard_email_message, $ecard_template);
-        $ecard_template = str_replace('[ecard-link]', $ecard_pick_me_attachment, $ecard_template);
+        $ecard_template = str_replace('[ecard-link]', $ecardAttachment, $ecard_template);
         $ecard_template = str_replace('[ecard-content]', $ecard_content, $ecard_template);
         $ecard_template = str_replace('[ecard-referrer]', $ecard_referer, $ecard_template);
         //
@@ -409,7 +407,7 @@ function display_ecardMe() {
 		$content['comment_content'] = $ecard_email_message;
 
 		if (ecard_checkSpam($content)) {
-			echo '<p><strong>' . __('Akismet prevented sending of this eCard and marked it as spam!', 'ecards') . '</strong></p>';
+			echo '<p><strong>' . esc_html__('Akismet prevented sending of this eCard and marked it as spam!', 'ecards') . '</strong></p>';
 		} else {
             // Add new user with "eCards Sender" role
             if ((int) get_option('ecard_user_create') === 1) {
@@ -421,7 +419,7 @@ function display_ecardMe() {
                     $user = new WP_User($user_id);
                     $user->set_role('ecards_sender');
                 } else {
-                    $random_password = __('User already exists. Password inherited.', 'ecards');
+                    $random_password = esc_html__('User already exists. Password inherited.', 'ecards');
                 }
             }
 
@@ -433,7 +431,7 @@ function display_ecardMe() {
                 $ecard_send_time = date('Y-m-d H:i:s', $ecard_send_time);
 
                 $ecard_post = array(
-                    'post_title'    => __('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
+                    'post_title'    => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
                     'post_content'  => $ecard_template,
                     'post_status'   => 'future',
                     'post_type'     => 'ecard',
@@ -443,7 +441,7 @@ function display_ecardMe() {
             } else {
                 $ecard_post_create_status = get_option('ecard_post_create_status');
                 $ecard_post = array(
-                    'post_title'    => __('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
+                    'post_title'    => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
                     'post_content'  => $ecard_template,
                     'post_status'   => $ecard_post_create_status,
                     'post_type'     => 'ecard',
@@ -456,9 +454,9 @@ function display_ecardMe() {
     
             if (isset($_POST['ecard_pick_me'])) {
                 // Add featured image to post
-                $o = (int) $_POST['ecard_pick_me'];
+                $eCardPicked = (int) $_POST['ecard_pick_me'];
 
-                set_post_thumbnail($ecard_id, $o);
+                set_post_thumbnail($ecard_id, $eCardPicked);
             }
             if (!empty($_FILES['file']['name'])) {
                 set_post_thumbnail($ecard_id, $attach_id);
@@ -488,12 +486,12 @@ function display_ecardMe() {
             // redirection
             if ($ecard_redirection === '1' && $ecard_page_thankyou != '') {
                 ecards_save();
-                echo '<meta http-equiv="refresh" content="0;url=' . $ecard_page_thankyou . '">';
+                echo '<meta http-equiv="refresh" content="0;url=' . esc_url($ecard_page_thankyou) . '">';
                 exit;
             }
 
             $ecard_label_success = get_option('ecard_label_success');
-            echo '<p class="ecard-confirmation"><strong>' . $ecard_label_success . '</strong></p>';
+            echo '<p class="ecard-confirmation"><strong>' . esc_html($ecard_label_success) . '</strong></p>';
             ecards_save();
         }
     }
@@ -521,7 +519,7 @@ function display_ecardMe() {
 
             $ecard_label = (int) get_option('ecard_label');
             $ecard_image_size = get_option('ecard_image_size');
-            $ecard_image_size_email = get_option('ecard_image_size_email');
+            $ecardSizeEmail = get_option('ecard_image_size_email');
 
             $ecard_use_display = (string) get_option('ecard_use_display'); // Carousel or Masonry Grid
             $ecard_group_role = '';
@@ -537,7 +535,7 @@ function display_ecardMe() {
                         $alt = get_post_meta($a->ID, '_wp_attachment_image_alt', true);
                         if ($alt != 'noselect') {
                             $output .= '<div class="ecard">';
-                                $large = wp_get_attachment_image_src($a->ID, $ecard_image_size_email);
+                                $large = wp_get_attachment_image_src($a->ID, $ecardSizeEmail);
                                 $thumb = wp_get_attachment_image($a->ID, $ecard_image_size);
                                 if ($ecard_label === 0) {
                                     $output .= '<a href="' . $large[0] . '" class="ecards">' . $thumb . '</a><br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked><label for="ecard' . $a->ID . '"></label>';
@@ -658,14 +656,14 @@ function ecard_enqueue_scripts() {
 
 // Displays options menu
 function ecard_add_option_page() {
-	add_options_page(__('eCards', 'ecards'), __('eCards', 'ecards'), 'manage_options', 'ecards', 'ecard_options_page');
+	add_options_page(esc_html__('eCards', 'ecards'), esc_html__('eCards', 'ecards'), 'manage_options', 'ecards', 'ecard_options_page');
 }
 
 add_action('admin_menu', 'ecard_add_option_page');
 
 // custom settings link inside Plugins section
 function ecards_settings_link($links) { 
-	$settings_link = '<a href="options-general.php?page=ecards">' . __('Settings', 'ecards') . '</a>'; 
+	$settings_link = '<a href="options-general.php?page=ecards">' . esc_html__('Settings', 'ecards') . '</a>'; 
 	array_unshift($links, $settings_link); 
 	return $links; 
 }

@@ -2,14 +2,14 @@
 class eCards_Additional_Images {
 	protected static $instance = null;
 
-	private $db;
+	private $eCardDb;
 
     private $meta_key = '_ecards_additional_images';
 
     protected function __construct() {
         global $wpdb;
 
-        $this->db = $wpdb;
+        $this->eCardDb = $wpdb;
     }
 
     public static function getInstance() {
@@ -28,7 +28,7 @@ class eCards_Additional_Images {
         $screens = array('post', 'page');
 
         foreach ($screens as $screen) {
-            add_meta_box('twp-attach-post-images', __('eCards Additional Images', 'ecards'), array($this, 'attachMetaBoxHTML'), $screen, 'side');
+            add_meta_box('twp-attach-post-images', esc_html__('eCards Additional Images', 'ecards'), array($this, 'attachMetaBoxHTML'), $screen, 'side');
         }
     }
 
@@ -57,17 +57,17 @@ class eCards_Additional_Images {
         echo '<p>Use this box to add images from your <strong>Media Library</strong>.</p>
 
         <p class="hide-if-no-js">
-            <a href="' . $href . '" id="twp-attach-post-images-uploader" class="button button-secondary">Select image(s)</a>
+            <a href="' . esc_url($href) . '" id="twp-attach-post-images-uploader" class="button button-secondary">Select image(s)</a>
             <p><small>Use <code class="codor">CTRL</code> key to select multiple images</small></p>
-            <input type="hidden" id="twp-attach-post-images-selected" name="selected_post_image" value="' . $images_str . '">
+            <input type="hidden" id="twp-attach-post-images-selected" name="selected_post_image" value="' . sanitize_text_field($images_str) . '">
         </p>
 
         <div class="hide-if-no-js" id="twp-attach-post-images-list-container">
             <ul id="twp-attach-post-images-list">';
                 if (!empty($images)) : foreach ($images as $image) :
                     echo '<li>
-                        <img src="' . $image->url . '" alt="">
-                        <a href="javascript:void(0)" class="delete" data-id="' . $image->id . '"><span class="dashicons dashicons-trash"></span></a>
+                        <img src="' . esc_url($image->url) . '" alt="">
+                        <a href="javascript:void(0)" class="delete" data-id="' . (int) $image->id . '"><span class="dashicons dashicons-trash"></span></a>
                     </li>';
                 endforeach; endif;
             echo '</ul>

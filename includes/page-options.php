@@ -26,7 +26,7 @@ function ecard_options_page() {
         update_option('ecard_post_create_status', sanitize_text_field($_POST['ecard_post_create_status']));
         update_option('ecard_user_create', sanitize_text_field($_POST['ecard_user_create']));
 
-        echo '<div id="message" class="updated notice is-dismissible"><p>' . __('Options updated successfully!', 'ecards') . '</p></div>';
+        echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
     if(isset($_POST['info_payment_update'])) {
         update_option('ecard_restrictions', sanitize_text_field($_POST['ecard_restrictions']));
@@ -47,7 +47,7 @@ function ecard_options_page() {
         update_option('p2v_shipping', sanitize_text_field($_POST['p2v_shipping']));
         update_option('p2v_cbt', sanitize_text_field($_POST['p2v_cbt']));
 
-        echo '<div id="message" class="updated notice is-dismissible"><p>' . __('Options updated successfully!', 'ecards') . '</p></div>';
+        echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
     if (isset($_POST['info_designer_update'])) {
         update_option('ecard_title', stripslashes($_POST['ecard_title']));
@@ -64,7 +64,7 @@ function ecard_options_page() {
 
         update_option('ecard_allow_cc', sanitize_text_field($_POST["ecard_allow_cc"]));
 
-        echo '<div id="message" class="updated notice is-dismissible"><p>' . __('Options updated successfully!', 'ecards') . '</p></div>';
+        echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
     if(isset($_POST['info_labels_update'])) {
         update_option('ecard_label_name_own', stripslashes(sanitize_text_field($_POST['ecard_label_name_own'])));
@@ -77,12 +77,12 @@ function ecard_options_page() {
         update_option('ecard_submit', stripslashes(sanitize_text_field($_POST['ecard_submit'])));
         update_option('ecard_link_anchor', stripslashes(sanitize_text_field($_POST['ecard_link_anchor'])));
 
-        echo '<div id="message" class="updated notice is-dismissible"><p>' . __('Options updated successfully!', 'ecards') . '</p></div>';
+        echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
     if(isset($_POST['info_appearance_update'])) {
         update_option('ecard_use_display', sanitize_text_field($_POST['ecard_use_display']));
 
-        echo '<div id="message" class="updated notice is-dismissible"><p>' . __('Options updated successfully!', 'ecards') . '</p></div>';
+        echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
     if(isset($_POST['info_debug_update'])) {
         $headers = '';
@@ -107,10 +107,10 @@ function ecard_options_page() {
         $ecard_noreply = get_option('ecard_noreply');
         $ecard_template = get_option('ecard_template');
         if (empty($ecard_noreply)) {
-            echo '<div id="message" class="error notice is-dismissible"><p>' . __('You have not set a dedicated email address for eCards! <a href="' . admin_url('options-general.php?page=ecards&tab=ecards_email') . '">Click here</a> to set it.', 'ecards') . '</p></div>';
+            echo '<div id="message" class="error notice is-dismissible"><p>' . esc_html__('You have not set a dedicated email address for eCards! <a href="' . admin_url('options-general.php?page=ecards&tab=ecards_email') . '">Click here</a> to set it.', 'ecards') . '</p></div>';
         }
         if (empty($ecard_template)) {
-            echo '<div id="message" class="error notice is-dismissible"><p>' . __('You have not set an email template for eCards! <a href="' . admin_url('options-general.php?page=ecards&tab=designer') . '">Click here</a> to set it.', 'ecards') . '</p></div>';
+            echo '<div id="message" class="error notice is-dismissible"><p>' . esc_html__('You have not set an email template for eCards! <a href="' . admin_url('options-general.php?page=ecards&tab=designer') . '">Click here</a> to set it.', 'ecards') . '</p></div>';
         }
 
 		$active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'ecards_dashboard';
@@ -222,17 +222,15 @@ function ecard_options_page() {
 									<option value="false"<?php if(get_option('ecard_use_akismet') === 'false') echo ' selected'; ?>>Do not use Akismet</option>
 								</select>
     							<?php
-    							if(function_exists('akismet_init')) {
+    							if (function_exists('akismet_init')) {
     								$wpcom_api_key = get_option('wordpress_api_key');
     
     								if(!empty($wpcom_api_key)) {
     									echo '<p><small>Your Akismet plugin is installed and working properly. Your API key is <code>' . $wpcom_api_key . '</code>.</small></p>';
-    								}
-    								else {
+    								} else {
     									echo '<p><small>Your Akismet plugin is installed but no API key is present. Please fix it.</small></p>';
     								}
-    							}
-    							else {
+    							} else {
     								echo '<p><small>You need Akismet in order to send eCards. Please install/activate it.</small></p>';
     							}
     							?>
