@@ -85,13 +85,10 @@
 
     var _appendImage = function(image) {
         var src = image.sizes && image.sizes.thumbnail ? image.sizes.thumbnail.url : image.url;
-        var maxWidth = 75;
         var $li = $(_replace(liTemplate, {
             'src': src,
             'id': image.id
         }));
-
-        var $image = $li.find('image');
 
         $list.prepend($li);
     };

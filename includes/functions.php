@@ -102,8 +102,6 @@ function ecard_checkSpam($content) {
 		$wpcom_api_key = get_option('wordpress_api_key');
 
 		if(!empty($wpcom_api_key)) {
-			global $akismet_api_host, $akismet_api_port;
-
 			// set remaining required values for akismet api
 			$content['user_ip'] = preg_replace('/[^0-9., ]/', '', $_SERVER['REMOTE_ADDR']);
 			$content['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
@@ -138,12 +136,6 @@ add_action('publish_ecard', 'ecard_send_later');
 
 function ecard_send_later($ecard_id) {
 	$ecard_send_behaviour = get_option('ecard_send_behaviour');
-	$ecard_link_anchor = get_option('ecard_link_anchor');
-
-	$ecard_redirection = get_option('ecard_redirection');
-	$ecard_page_thankyou = get_option('ecard_page_thankyou');
-
-    $attachments = '';
 
     // send eCard
     if ($ecard_send_behaviour === '1') {

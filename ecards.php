@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com
-Version: 4.4.0
+Version: 4.4.1.1
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
@@ -317,9 +317,7 @@ function display_ecardMe() {
         $no_attachments = 1;
         if (!empty($_FILES['file']['name'])) {
             $no_attachments = 0;
-            //$attachments = '';
             move_uploaded_file($_FILES['file']['tmp_name'], WP_CONTENT_DIR . '/uploads/' . basename($_FILES['file']['name']));
-            //$attachments = array(WP_CONTENT_DIR . '/uploads/' . $_FILES['file']['name']);
 
             // attach user uploaded image to eCard custom post
             $filetype = wp_check_filetype(basename($_FILES['file']['name']), null);
@@ -334,8 +332,6 @@ function display_ecardMe() {
             require_once(ABSPATH . "wp-admin" . '/includes/image.php');
             $attach_data = wp_generate_attachment_metadata($attach_id, WP_CONTENT_DIR . '/uploads/' . $_FILES['file']['name']);
             wp_update_attachment_metadata($attach_id, $attach_data);
-        } else {
-            //$attachments = array(get_attached_file($_POST['ecard_pick_me']));
         }
         // end user attachment
 
