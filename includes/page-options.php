@@ -137,7 +137,7 @@ function ecard_options_page() {
                     </div>
                     <div class="gb-footer">
                         <p><img src="' . plugins_url('img/gb-logo-white-512.png', dirname(__FILE__)) . '" alt="getButterfly"></p>
-                        <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external">official website</a>. <a href="https://getbutterfly.com/members/documentation/ecards/" class="gb-documentation">eCards Documentation</a>.<br>&copy;' . date('Y') . ' <a href="https://getbutterfly.com/" rel="external"><strong>getButterfly</strong>.com</a> &middot; <small>Code wrangling since 2005</small></p>
+                        <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external">official website</a>. <a href="https://getbutterfly.com/members/documentation/ecards/" class="gb-documentation">eCards Documentation</a>. <a href="https://getbutterfly.com/downloads/ecards-ui/">Get eCards UI theme</a>.<br>&copy;' . date('Y') . ' <a href="https://getbutterfly.com/" rel="external"><strong>getButterfly</strong>.com</a> &middot; <small>Code wrangling since 2005</small></p>
                     </div>
                 </div>
             </div>';

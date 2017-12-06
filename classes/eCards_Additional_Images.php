@@ -58,8 +58,8 @@ class eCards_Additional_Images {
 
         <p class="hide-if-no-js">
             <a href="' . esc_url($href) . '" id="twp-attach-post-images-uploader" class="button button-secondary">Select image(s)</a>
-            <p><small>Use <code class="codor">CTRL</code> key to select multiple images</small></p>
-            <input type="hidden" id="twp-attach-post-images-selected" name="selected_post_image" value="' . sanitize_text_field($images_str) . '">
+            <p><small>Use <code class="codor">CTRL</code> key to select multiple images. Note that attaching images may detach them from other posts or pages.</small></p>
+            <input type="hidden" id="twp-attach-post-images-selected" name="selected_post_image" value="' . esc_html($images_str) . '">
         </p>
 
         <div class="hide-if-no-js" id="twp-attach-post-images-list-container">

@@ -50,7 +50,7 @@
     opacity: 1;
 }
 .ecards-inlinebar canvas {
-    vertical-align: bottom !important;
+    vertical-align: bottom;
     max-width: 100%;
 }
 

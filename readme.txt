@@ -4,7 +4,8 @@ Tags: akismet, ecard, electronic card, flash card, greeting card, paypal, postca
 License: GPLv3
 Requires at least: 4.6
 Tested up to: 4.9.1
-Stable tag: 4.4.1.2
+Requires PHP: 5.5
+Stable tag: 4.4.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -27,13 +28,13 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
-= 4.4.1.2 =
+= 4.4.2 =
+* UPDATE: Updated documentation
+* UPDATE: Relaunched eCards UI
 * UPDATE: Code quality updates
 * UPDATE: Code performance updates
 * UPDATE: Code security updates
-
-= 4.4.1.1 =
-* UPDATE: Code quality updates
+* UI: Added better contextual help for additional images
 
 = 4.4.0 =
 * FIX: Fixed incorrect email message being passed to Akismet

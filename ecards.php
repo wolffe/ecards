@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com
-Version: 4.4.1.2
+Version: 4.4.2
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
@@ -68,17 +68,16 @@ function eCardsInstall() {
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     $tablename = $wpdb->prefix . 'ecards_stats';
-    if ($wpdb->get_var("SHOW TABLES LIKE '$tablename'") != $tablename) {
-        $sql = "CREATE TABLE " . $tablename . " (
+    if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $tablename)) != $tablename) {
+        $sql = $wpdb->prepare("CREATE TABLE IF NOT EXISTS %s (
             `date` date NOT NULL,
             `sent` mediumint(9) NOT NULL,
             UNIQUE KEY `date` (`date`)
-        );";
+        )", $tablename);
 
         dbDelta($sql);
+        maybe_convert_table_to_utf8mb4($tablename);
     }
-
-    $result = maybe_convert_table_to_utf8mb4($tablename);
 
     // Default options
     add_option('ecard_label_name_own', 'Your name');
