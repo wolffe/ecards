@@ -62,7 +62,7 @@ function ecards_save() {
     $ecards_stats_now = date('Y-m-d');
     $cards_sent = 0;
 
-    $wpdb->query($wpdb->prepare("INSERT INTO %s (date, sent) VALUES (%s, %d) ON DUPLICATE KEY UPDATE sent = sent + 1", $ecards_stats_table, $ecards_stats_now, $cards_sent));
+    $wpdb->query($wpdb->prepare("INSERT INTO `$ecards_stats_table` (date, sent) VALUES (%s, %d) ON DUPLICATE KEY UPDATE sent = sent + 1", $ecards_stats_now, $cards_sent));
 
 	$ecard_counter = get_option('ecard_counter');
     update_option('ecard_counter', ($ecard_counter + 1));
