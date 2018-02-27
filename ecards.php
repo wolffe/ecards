@@ -251,10 +251,13 @@ function p2v_hide($atts, $content = null) {
 
     $p2v_who = get_option('p2v_who');
 
-    if($p2v_who === '0') $p2v_capability = 0;
-    if($p2v_who === '1') $p2v_capability = 1;
+    if ((int) $p2v_who === 0) {
+        $p2v_capability = 0;
+    } else if ((int) $p2v_who === 1) {
+        $p2v_capability = 1;
+    }
 
-    if (null != $content && ('0' === $p2v_capability || ($_GET['ecid'] + 600) > time())) {
+    if (isset($_GET['ecid']) && (null != $content && ('0' === $p2v_capability || ($_GET['ecid'] + 600) > time()))) {
 		return do_shortcode($content);
 	} else {
 		// get all post attachments

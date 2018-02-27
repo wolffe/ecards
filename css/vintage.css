@@ -297,14 +297,11 @@
 	display: inline;
 	position: relative;
 	z-index: 9999;
-	margin: 0;
 	padding: 5px 3px;
 	font-size: 14px;
 	line-height: 20px;
-	font-weight: bold;
+	font-weight: 700;
 	background-color: #fff;
-	float: left;
-	width: 182px;
 	text-align: center;
 	cursor: pointer;
 }
@@ -612,29 +609,22 @@
 	position: relative;
 	padding: 4px 17px 4px 33px;
 	border: 1px solid #d7d8da;
-	/* FF3.6+ */
+
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fff), color-stop(73%, #f4f8fa));
-	/* Chrome,Safari4+ */
 	background: -webkit-linear-gradient(top, #fff 0%, #f4f8fa 73%);
-	/* Chrome10+,Safari5.1+ */
-	/* Opera 11.10+ */
-	/* IE10+ */
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), color-stop(73%, #f4f8fa));
+	background: -o-linear-gradient(top, #fff 0%, #f4f8fa 73%);
 	background: linear-gradient(to bottom, #fff 0%, #f4f8fa 73%);
-	/* W3C */
 }
 .xdsoft_datetimepicker .blue-gradient-button:hover, .xdsoft_datetimepicker .blue-gradient-button:focus, .xdsoft_datetimepicker .blue-gradient-button:hover span, .xdsoft_datetimepicker .blue-gradient-button:focus span {
   color: #454551;
-  /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f4f8fa), color-stop(73%, #FFF));
-  /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #f4f8fa 0%, #FFF 73%);
-  /* Chrome10+,Safari5.1+ */
-  /* Opera 11.10+ */
-  /* IE10+ */
-  background: linear-gradient(to bottom, #f4f8fa 0%, #FFF 73%);
-  /* W3C */
-}
 
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f4f8fa), color-stop(73%, #FFF));
+  background: -webkit-linear-gradient(top, #f4f8fa 0%, #FFF 73%);
+  background: -webkit-gradient(linear, left top, left bottom, from(#f4f8fa), color-stop(73%, #FFF));
+  background: -o-linear-gradient(top, #f4f8fa 0%, #FFF 73%);
+  background: linear-gradient(to bottom, #f4f8fa 0%, #FFF 73%);
+}
 
 
 .slick-slide {

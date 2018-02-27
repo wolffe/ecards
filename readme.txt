@@ -31,6 +31,8 @@ There are two ways you can use this plugin:
 = 4.4.5 =
 * FIX: Consolidated wp_mail() headers
 * FIX: Consolidated payment shortcode
+* FIX: Fixed undefined variable
+* FIX: Styling tweaks
 * UPDATE: Removed eCards UI references
 * UPDATE: Code quality updates
 
