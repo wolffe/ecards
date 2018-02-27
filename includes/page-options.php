@@ -6,7 +6,6 @@ function ecard_options_page() {
 
     if(isset($_POST['info_settings_update'])) {
         update_option('ecard_label', sanitize_text_field($_POST['ecard_label']));
-        update_option('ecard_custom_style', sanitize_text_field($_POST['ecard_custom_style']));
 
         update_option('ecard_dropbox_private', sanitize_text_field($_POST['ecard_dropbox_private']));
 
@@ -84,10 +83,11 @@ function ecard_options_page() {
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
-    if(isset($_POST['info_debug_update'])) {
+    if (isset($_POST['info_debug_update'])) {
         $headers = '';
         $headers[] = "Content-Type: text/html;";
-        if(!empty($_POST['ecard_test_email']) && wp_mail($_POST['ecard_test_email'], 'eCards test email', 'Testing eCards plugin...', $headers)) {
+
+        if (!empty($_POST['ecard_test_email']) && wp_mail($_POST['ecard_test_email'], 'eCards test email', 'Testing eCards plugin...', $headers)) {
             echo '<div id="message" class="updated notice is-dismissible"><p>Mail sent successfully. Check your inbox.</p></div>';
         } else {
             echo '<div id="message" class="updated notice notice-error is-dismissible"><p>Mail not sent. Check your server configuration.</p></div>';
@@ -137,7 +137,7 @@ function ecard_options_page() {
                     </div>
                     <div class="gb-footer">
                         <p><img src="' . plugins_url('img/gb-logo-white-512.png', dirname(__FILE__)) . '" alt="getButterfly"></p>
-                        <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external">official website</a>. <a href="https://getbutterfly.com/members/documentation/ecards/" class="gb-documentation">eCards Documentation</a>. <a href="https://getbutterfly.com/downloads/ecards-ui/">Get eCards UI theme</a>.<br>&copy;' . date('Y') . ' <a href="https://getbutterfly.com/" rel="external"><strong>getButterfly</strong>.com</a> &middot; <small>Code wrangling since 2005</small></p>
+                        <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external">official website</a>. <a href="https://getbutterfly.com/members/documentation/ecards/" class="gb-documentation">eCards Documentation</a>.<br>&copy;' . date('Y') . ' <a href="https://getbutterfly.com/" rel="external"><strong>getButterfly</strong>.com</a> &middot; <small>Code wrangling since 2005</small></p>
                     </div>
                 </div>
             </div>';
@@ -203,15 +203,6 @@ function ecard_options_page() {
 									<option value="1"<?php if(get_option('ecard_label') == 1) echo ' selected'; ?>>Use label behaviour for eCard thumbnail</option>
 								</select>
                                 <br><small>Choose what happens when users click on eCards.</small>
-    		                </td>
-    		            </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_custom_style">eCard style</label></th>
-    		                <td>
-								<select name="ecard_custom_style" class="regular-text">
-									<option value="Vintage"<?php if(get_option('ecard_custom_style') === 'Vintage') echo ' selected'; ?>>Use Vintage Style (recommended)</option>
-									<option value="Theme"<?php if(get_option('ecard_custom_style') === 'Theme') echo ' selected'; ?>>Use eCards UI style</option>
-								</select>
     		                </td>
     		            </tr>
     		            <tr>

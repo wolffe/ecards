@@ -5,13 +5,13 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com
-Version: 4.4.4
+Version: 4.4.5
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
 
 eCards
-Copyright (C) 2011-2017 Ciprian Popescu (getbutterfly@gmail.com)
+Copyright (C) 2011-2018 Ciprian Popescu (getbutterfly@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -90,7 +90,6 @@ function eCardsInstall() {
     add_option('ecard_submit', 'Send eCard');
 
     add_option('ecard_label', 0);
-    add_option('ecard_custom_style', 'Vintage');
     add_option('ecard_counter', 0);
     add_option('ecard_link_anchor', 'Click to see your eCard!');
     add_option('ecard_redirection', 0);
@@ -153,6 +152,7 @@ function eCardsInstall() {
     delete_option('ecard_behaviour');
     delete_option('ecard_use_carousel');
     delete_option('ecard_use_masonry');
+    delete_option('ecard_custom_style');
 }
 
 register_activation_hook(__FILE__, 'eCardsInstall');
@@ -188,6 +188,61 @@ add_action('admin_enqueue_scripts', 'ecards_load_additional');
 
 
 
+function ecard_get_attachments($ecid) {
+    /*
+     * Get all post attachments and exclude featured image
+     */
+    $output = '';
+
+    $args = array(
+        'post_type' => 'attachment',
+        'numberposts' => -1,
+        'post_status' => null,
+        'post_parent' => $ecid,
+        'post_mime_type' => 'image',
+        'orderby' => 'menu_order',
+        'order' => 'ASC',
+        'exclude' => get_post_thumbnail_id($ecid),
+    );
+    $attachments = get_posts($args);
+
+    $ecard_label = (int) get_option('ecard_label');
+    $ecard_image_size = get_option('ecard_image_size');
+    $ecardSizeEmail = get_option('ecard_image_size_email');
+
+    $ecard_use_display = (string) get_option('ecard_use_display'); // Carousel or Masonry Grid
+    $ecard_group_role = '';
+    $ecard_group_role = ($ecard_use_display === 'carousel') ? 'ecard-carousel' : 'ecard-masonry';
+
+    if ($attachments) {
+        if ($ecard_use_display === 'carousel') {
+            $output .= '<div class="ecard_arrows"></div>';
+        }
+
+        $output .= '<div role="radiogroup" class="ecard-inner-container ' . $ecard_group_role . '">';
+            foreach ($attachments as $a) {
+                $alt = get_post_meta($a->ID, '_wp_attachment_image_alt', true);
+                if ($alt != 'noselect') {
+                    $output .= '<div class="ecard">';
+                        $large = wp_get_attachment_image_src($a->ID, $ecardSizeEmail);
+                        $thumb = wp_get_attachment_image($a->ID, $ecard_image_size);
+                        if ($ecard_label === 0) {
+                            $output .= '<a href="' . $large[0] . '" class="ecards">' . $thumb . '</a><br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked><label for="ecard' . $a->ID . '"></label>';
+                        } else if ($ecard_label === 1) {
+                            $output .= '<label for="ecard' . $a->ID . '">' . $thumb . '<br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked></label>';
+                        }
+                    $output .= '</div>';
+                }
+            }
+        $output .= '</div>
+        <div class="ecards-separator"></div>';
+    }
+
+    return $output;
+}
+
+
+
 // PayPal functions
 function p2v_hide($atts, $content = null) {
 	extract(shortcode_atts(array(
@@ -203,44 +258,7 @@ function p2v_hide($atts, $content = null) {
 		return do_shortcode($content);
 	} else {
 		// get all post attachments
-		$output = '';
-		$args = array(
-            'post_type'         => 'attachment',
-            'numberposts'       => -1,
-            'post_status'       => null,
-            'post_parent'       => get_the_ID(),
-            'post_mime_type'    => 'image',
-            'orderby'           => 'menu_order',
-            'order'             => 'ASC',
-            'exclude'           => get_post_thumbnail_id(get_the_ID()),
-		);
-		$attachments = get_posts($args);
-
-        $ecard_image_size = get_option('ecard_image_size');
-        $ecardSizeEmail = get_option('ecard_image_size_email');
-
-		if ($attachments) {
-            $output .= '<div role="radiogroup">';
-                foreach($attachments as $attachedECard) {
-                    $alt = get_post_meta($attachedECard->ID, '_wp_attachment_image_alt', true);
-                    if($alt != 'noselect') {
-                        $output .= '<div class="ecard">';
-                            $large = wp_get_attachment_image_src($attachedECard->ID, $ecardSizeEmail);
-                            $thumb = wp_get_attachment_image($attachedECard->ID, $ecard_image_size);
-                            if(get_option('ecard_label') == 0) {
-                                $output .= '<a href="' . $large[0] . '" class="ecards">' . $thumb . '</a><br><input type="radio" name="ecard_pick_me" id="ecard' . $attachedECard->ID . '" value="' . $attachedECard->ID . '" checked><label for="ecard' . $attachedECard->ID . '"></label>';
-							}
-							if(get_option('ecard_label') == 1) {
-                                $output .= '<label for="ecard' . $attachedECard->ID . '">' . $thumb . '<br><input type="radio" name="ecard_pick_me" id="ecard' . $attachedECard->ID . '" value="' . $attachedECard->ID . '" checked></label>';
-							}
-                        $output .= '</div>';
-                    }
-                }
-                $output .= '<div style="clear:both;"></div>';
-            $output .= '</div>';
-
-		}
-		// end
+		$output = ecard_get_attachments(get_the_ID());
 
 		$output .= p2v_button($atts);
 
@@ -327,7 +345,7 @@ function display_ecardMe() {
             );
 
             $attach_id = wp_insert_attachment($attachment, WP_CONTENT_DIR . '/uploads/' . $_FILES['file']['name']);
-            require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+            require_once ABSPATH . 'wp-admin/includes/image.php';
             $attach_data = wp_generate_attachment_metadata($attach_id, WP_CONTENT_DIR . '/uploads/' . $_FILES['file']['name']);
             wp_update_attachment_metadata($attach_id, $attach_data);
         }
@@ -388,8 +406,7 @@ function display_ecardMe() {
         $subject = str_replace('[name]', $ecard_from, $subject);
         $subject = str_replace('[email]', $ecard_email_from, $subject);
 
-
-
+        $headers = '';
         $headers[] = "Content-Type: text/html;";
 
 		// Akismet
@@ -494,52 +511,7 @@ function display_ecardMe() {
 	$output = '<div class="ecard-container">';
 		$output .= '<form action="#" method="post" enctype="multipart/form-data" id="eCardForm">';
 
-            /*
-             * Get all post attachments and exclude featured image
-             */
-            $args = array(
-                'post_type' => 'attachment',
-                'numberposts' => -1,
-                'post_status' => null,
-                'post_parent' => get_the_ID(),
-                'post_mime_type' => 'image',
-                'orderby' => 'menu_order',
-                'order' => 'ASC',
-                'exclude' => get_post_thumbnail_id(get_the_ID()),
-            );
-            $attachments = get_posts($args);
-
-            $ecard_label = (int) get_option('ecard_label');
-            $ecard_image_size = get_option('ecard_image_size');
-            $ecardSizeEmail = get_option('ecard_image_size_email');
-
-            $ecard_use_display = (string) get_option('ecard_use_display'); // Carousel or Masonry Grid
-            $ecard_group_role = '';
-            $ecard_group_role = ($ecard_use_display === 'carousel') ? 'ecard-carousel' : 'ecard-masonry';
-
-            if ($attachments) {
-                if ($ecard_use_display === 'carousel') {
-                    $output .= '<div class="ecard_arrows"></div>';
-                }
-
-                $output .= '<div role="radiogroup" class="ecard-inner-container ' . $ecard_group_role . '">';
-                    foreach ($attachments as $a) {
-                        $alt = get_post_meta($a->ID, '_wp_attachment_image_alt', true);
-                        if ($alt != 'noselect') {
-                            $output .= '<div class="ecard">';
-                                $large = wp_get_attachment_image_src($a->ID, $ecardSizeEmail);
-                                $thumb = wp_get_attachment_image($a->ID, $ecard_image_size);
-                                if ($ecard_label === 0) {
-                                    $output .= '<a href="' . $large[0] . '" class="ecards">' . $thumb . '</a><br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked><label for="ecard' . $a->ID . '"></label>';
-                                } else if ($ecard_label === 1) {
-                                    $output .= '<label for="ecard' . $a->ID . '">' . $thumb . '<br><input type="radio" name="ecard_pick_me" id="ecard' . $a->ID . '" value="' . $a->ID . '" checked></label>';
-                                }
-                            $output .= '</div>';
-                        }
-                    }
-                $output .= '</div>
-                <div class="ecards-separator"></div>';
-            }
+            $output .= ecard_get_attachments(get_the_ID());
 
             if (get_option('ecard_dropbox_enable') === '1') {
                 $output .= '<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="' . get_option('ecard_dropbox_private') . '"></script>
@@ -624,11 +596,7 @@ add_action('wp_enqueue_scripts', 'ecard_enqueue_scripts');
 function ecard_enqueue_scripts() {
     $ecard_send_later = get_option('ecard_send_later');
 
-    if (get_option('ecard_custom_style') === 'Vintage') {
-        wp_enqueue_style('ecards', plugins_url('css/vintage.css', __FILE__));
-    } else if (get_option('ecard_custom_style') === 'Theme') {
-        wp_enqueue_style('ecards', plugins_url('css/extended.css', __FILE__));
-    }
+    wp_enqueue_style('ecards', plugins_url('css/vintage.css', __FILE__));
 
     if ($ecard_send_later == 1) {
         wp_enqueue_script('ecards-dtp', plugins_url('js/jquery.datetimepicker.full.min.js', __FILE__), array('jquery'), '2.5.4', true);
