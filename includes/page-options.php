@@ -84,7 +84,6 @@ function ecard_options_page() {
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     }
     if (isset($_POST['info_debug_update'])) {
-        $headers = '';
         $headers[] = "Content-Type: text/html;";
 
         if (!empty($_POST['ecard_test_email']) && wp_mail($_POST['ecard_test_email'], 'eCards test email', 'Testing eCards plugin...', $headers)) {
