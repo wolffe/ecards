@@ -31,6 +31,10 @@ There are two ways you can use this plugin:
 = 4.4.7 =
 * FIX: Fixed CSS compatibility with IE
 * UPDATE: Added basic template for eCards grid
+* UPDATE: Show eCards in WordPress Dashboard by default
+* UPDATE: Removed new eCard CPT capability (eCards are read only)
+* TODO: Basic stats
+* TODO: Remove sparklines
 
 = 4.4.6 =
 * FIX: Fixed wp_mail() headers compatibility with PHP 7+

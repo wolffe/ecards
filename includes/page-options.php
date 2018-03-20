@@ -19,7 +19,6 @@ function ecard_options_page() {
 
         update_option('ecard_shortcode_fix', sanitize_text_field($_POST['ecard_shortcode_fix']));
         update_option('ecard_html_fix', sanitize_text_field($_POST['ecard_html_fix']));
-        update_option('ecard_show_menu_ui', sanitize_text_field($_POST['ecard_show_menu_ui']));
 
         update_option('ecard_use_akismet', sanitize_text_field($_POST['ecard_use_akismet']));
         update_option('ecard_post_create_status', sanitize_text_field($_POST['ecard_post_create_status']));
@@ -305,13 +304,6 @@ function ecard_options_page() {
 									<option value="publish"<?php if(get_option('ecard_post_create_status') === 'publish') echo ' selected'; ?>>Show eCards to search engines and sitemap plugins (mark as published)</option>
 								</select>
                                 <br><small>eCards are saved as custom post types. Use the options above to make them available to custom loops, sitemap plugins and search engines or hide them by marking them as private posts.</small>
-    		                </td>
-    		            </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_show_menu_ui">Show menu UI<br><small>(developers only)</small></label></th>
-    		                <td>
-                                <input name="ecard_show_menu_ui" id="ecard_show_menu_ui" type="checkbox"<?php if(get_option('ecard_show_menu_ui') === 'on') echo ' checked'; ?>> <label for="ecard_show_menu_ui">Show sent/scheduled eCards in administration menu</label>
-                                <br><small>By default, the eCard post type is hidden. If you need to see all sent or scheduled eCards, enable this option.</small>
     		                </td>
     		            </tr>
     		        </tbody>

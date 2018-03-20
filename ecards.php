@@ -124,7 +124,6 @@ function eCardsInstall() {
     add_option('ecard_image_size_email', 'medium');
     add_option('ecard_shortcode_fix', 'off');
     add_option('ecard_html_fix', 'off');
-    add_option('ecard_show_menu_ui', 'off');
     add_option('ecard_allow_cc', 'off');
 
     //
@@ -153,6 +152,7 @@ function eCardsInstall() {
     delete_option('ecard_use_carousel');
     delete_option('ecard_use_masonry');
     delete_option('ecard_custom_style');
+    delete_option('ecard_show_menu_ui');
 }
 
 register_activation_hook(__FILE__, 'eCardsInstall');

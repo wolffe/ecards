@@ -3,14 +3,6 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 // Register Custom Post Type
 function ecard_cpt() {
-    $ecard_show_menu_ui = get_option('ecard_show_menu_ui');
-    if (empty($ecard_show_menu_ui) || $ecard_show_menu_ui === 'off') {
-        $show_in_menu = 'false';
-    }
-    if ($ecard_show_menu_ui === 'on') {
-        $show_in_menu = true;
-    }
-
     $labels = array(
 		'name'                => _x( 'eCards', 'Post Type General Name', 'ecards' ),
 		'singular_name'       => _x( 'eCard', 'Post Type Singular Name', 'ecards' ),
@@ -32,13 +24,13 @@ function ecard_cpt() {
 		'label'               => esc_html__( 'eCard', 'ecards' ),
 		'description'         => esc_html__( 'eCard', 'ecards' ),
 		'labels'              => $labels,
-		'supports'            => array( 'title', 'editor', 'author', 'thumbnail', 'custom-fields', ),
+		'supports'            => array('title', 'editor', 'author', 'thumbnail', 'custom-fields'),
 		'hierarchical'        => false,
 		'public'              => true,
-		'show_ui'             => $show_in_menu,
-		'show_in_menu'        => $show_in_menu,
+		'show_ui'             => true,
+		'show_in_menu'        => true,
 		'menu_position'       => 5,
-		'menu_icon'           => 'dashicons-format-gallery',
+		'menu_icon'           => 'dashicons-email-alt',
 		'show_in_admin_bar'   => false,
 		'show_in_nav_menus'   => false,
 		'can_export'          => true,
@@ -47,6 +39,10 @@ function ecard_cpt() {
 		'publicly_queryable'  => true,
 		'rewrite'             => false,
 		'capability_type'     => 'post',
+		'capabilities' => array(
+			'create_posts' => 'do_not_allow', // Removes support for the "Add New" function
+		),
+		'map_meta_cap' => true, // Set to `false`, if users are not allowed to edit/delete existing posts
 	);
 	register_post_type( 'ecard', $args );
 
