@@ -5,7 +5,7 @@ License: GPLv3
 Requires at least: 4.6
 Tested up to: 4.9.4
 Requires PHP: 5.5
-Stable tag: 4.4.6
+Stable tag: 4.4.7
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -27,6 +27,10 @@ There are two ways you can use this plugin:
 4. A new eCards menu will appear in WordPress with options, and general help
 
 == Changelog ==
+
+= 4.4.7 =
+* FIX: Fixed CSS compatibility with IE
+* UPDATE: Added basic template for eCards grid
 
 = 4.4.6 =
 * FIX: Fixed wp_mail() headers compatibility with PHP 7+

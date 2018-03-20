@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com
-Version: 4.4.6
+Version: 4.4.7
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
@@ -211,8 +211,13 @@ function ecard_get_attachments($ecid) {
     $ecardSizeEmail = get_option('ecard_image_size_email');
 
     $ecard_use_display = (string) get_option('ecard_use_display'); // Carousel or Masonry Grid
-    $ecard_group_role = '';
-    $ecard_group_role = ($ecard_use_display === 'carousel') ? 'ecard-carousel' : 'ecard-masonry';
+
+    $ecard_group_role = 'none';
+    if ($ecard_use_display === 'carousel') {
+        $ecard_group_role = 'ecard-carousel';
+    } else if ($ecard_use_display === 'masonry') {
+        $ecard_group_role = 'ecard-masonry';
+    }
 
     if ($attachments) {
         if ($ecard_use_display === 'carousel') {
@@ -607,12 +612,12 @@ function ecard_enqueue_scripts() {
 
     if ((string) get_option('ecard_use_display') === 'carousel') {
         wp_enqueue_style('flickity', 'https://unpkg.com/flickity@2/dist/flickity.min.css');
-        wp_enqueue_script('flickity', 'https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js', array('jquery'), '2.0.10', true);
-        wp_enqueue_script('ecards-functions', plugins_url('js/jquery.functions.js', __FILE__), array('jquery', 'flickity'), '2.0.10', true);
+        wp_enqueue_script('flickity', 'https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js', array('jquery'), '2.1.0', true);
+        wp_enqueue_script('ecards-functions', plugins_url('js/jquery.functions.js', __FILE__), array('jquery', 'flickity'), '4.4.7', true);
     }
     if ((string) get_option('ecard_use_display') === 'masonry') {
         wp_enqueue_style('masonry');
-        wp_enqueue_script('ecards-functions', plugins_url('js/jquery.functions.js', __FILE__), array('jquery', 'masonry'), '3.3.2', true);
+        wp_enqueue_script('ecards-functions', plugins_url('js/jquery.functions.js', __FILE__), array('jquery', 'masonry'), '4.4.7', true);
     }
 }
 

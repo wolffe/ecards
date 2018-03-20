@@ -11,8 +11,10 @@
 .ecard-container input[type="email"],
 .ecard-container textarea {
     border: 1px solid rgba(169, 169, 169, 0.75);
-    border-radius: 3px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    -webkit-border-radius: 3px;
+            border-radius: 3px;
+    -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .ecard-container input[type="checkbox"] {
     margin: 0;
@@ -29,11 +31,13 @@
     padding: 8px;
     margin: 2px;
     background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
+    -webkit-border-radius: 3px;
+            border-radius: 3px;
 }
 .ecard {
     position: relative;
-    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
 }
 .ecard-container label {
     display: inline-block;
@@ -48,10 +52,12 @@
 .ecard-masonry .ecard img {
     max-width: 100%;
     height: auto;
-    box-shadow: none;
+    -webkit-box-shadow: none;
+            box-shadow: none;
 }
 .ecard-masonry .ecard a {
-    box-shadow: none;
+    -webkit-box-shadow: none;
+            box-shadow: none;
 }
 
 .ecard-carousel .ecard {
@@ -86,7 +92,8 @@
 
 /* jquery.datetimepicker.css */
 .xdsoft_datetimepicker {
-	box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.506);
+	-webkit-box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.506);
+	        box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.506);
 	background: #fff;
 	border-bottom: 1px solid #bbb;
 	border-left: 1px solid #ccc;
@@ -98,7 +105,8 @@
 	padding-top: 2px;
 	position: absolute;
 	z-index: 9999;
-	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	        box-sizing: border-box;
 	display: none;
 }
 .xdsoft_datetimepicker.xdsoft_rtl {
@@ -135,11 +143,13 @@
 .xdsoft_datetimepicker.xdsoft_inline {
 	display: inline-block;
 	position: static;
-	box-shadow: none;
+	-webkit-box-shadow: none;
+	        box-shadow: none;
 }
 
 .xdsoft_datetimepicker * {
-	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	        box-sizing: border-box;
 	padding: 0;
 	margin: 0;
 }
@@ -340,7 +350,8 @@
 
 .xdsoft_datetimepicker .xdsoft_label > .xdsoft_select > div > .xdsoft_option.xdsoft_current {
 	background: #33aaff;
-	box-shadow: #178fe5 0 1px 3px 0 inset;
+	-webkit-box-shadow: #178fe5 0 1px 3px 0 inset;
+	        box-shadow: #178fe5 0 1px 3px 0 inset;
 	color: #fff;
 	font-weight: 700;
 }
@@ -400,12 +411,14 @@
 
 .xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_highlighted_default {
 	background: #ffe9d2;
-	box-shadow: #ffb871 0 1px 4px 0 inset;
+	-webkit-box-shadow: #ffb871 0 1px 4px 0 inset;
+	        box-shadow: #ffb871 0 1px 4px 0 inset;
 	color: #000;
 }
 .xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_highlighted_mint {
 	background: #c1ffc9;
-	box-shadow: #00dd1c 0 1px 4px 0 inset;
+	-webkit-box-shadow: #00dd1c 0 1px 4px 0 inset;
+	        box-shadow: #00dd1c 0 1px 4px 0 inset;
 	color: #000;
 }
 
@@ -413,7 +426,8 @@
 .xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_current,
 .xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box >div >div.xdsoft_current {
 	background: #33aaff;
-	box-shadow: #178fe5 0 1px 3px 0 inset;
+	-webkit-box-shadow: #178fe5 0 1px 3px 0 inset;
+	        box-shadow: #178fe5 0 1px 3px 0 inset;
 	color: #fff;
 	font-weight: 700;
 }
@@ -433,13 +447,15 @@
 .xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box >div >div:hover {
 	color: #fff !important;
 	background: #ff8000 !important;
-	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+	        box-shadow: none !important;
 }
 
 .xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_current.xdsoft_disabled:hover,
 .xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box>div>div.xdsoft_current.xdsoft_disabled:hover {
 	background: #33aaff !important;
-	box-shadow: #178fe5 0 1px 3px 0 inset !important;
+	-webkit-box-shadow: #178fe5 0 1px 3px 0 inset !important;
+	        box-shadow: #178fe5 0 1px 3px 0 inset !important;
 	color: #fff !important;
 }
 
@@ -447,7 +463,8 @@
 .xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box >div >div.xdsoft_disabled:hover {
 	color: inherit	!important;
 	background: inherit !important;
-	box-shadow: inherit !important;
+	-webkit-box-shadow: inherit !important;
+	        box-shadow: inherit !important;
 }
 
 .xdsoft_datetimepicker .xdsoft_calendar th {
@@ -475,7 +492,8 @@
 .xdsoft_scrollbar >.xdsoft_scroller {
 	background: #ccc !important;
 	height: 20px;
-	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	        border-radius: 3px;
 }
 .xdsoft_scrollbar {
 	position: absolute;
@@ -494,7 +512,8 @@
 }
 
 .xdsoft_datetimepicker.xdsoft_dark {
-	box-shadow: 0 5px 15px -5px rgba(255, 255, 255, 0.506);
+	-webkit-box-shadow: 0 5px 15px -5px rgba(255, 255, 255, 0.506);
+	        box-shadow: 0 5px 15px -5px rgba(255, 255, 255, 0.506);
 	background: #000;
 	border-bottom: 1px solid #444;
 	border-left: 1px solid #333;
@@ -527,7 +546,8 @@
 
 .xdsoft_datetimepicker.xdsoft_dark .xdsoft_label > .xdsoft_select > div > .xdsoft_option.xdsoft_current {
 	background: #cc5500;
-	box-shadow: #b03e00 0 1px 3px 0 inset;
+	-webkit-box-shadow: #b03e00 0 1px 3px 0 inset;
+	        box-shadow: #b03e00 0 1px 3px 0 inset;
 	color: #000;
 }
 
@@ -555,12 +575,14 @@
 
 .xdsoft_datetimepicker.xdsoft_dark .xdsoft_calendar td.xdsoft_highlighted_default {
 	background: #ffe9d2;
-	box-shadow: #ffb871 0 1px 4px 0 inset;
+	-webkit-box-shadow: #ffb871 0 1px 4px 0 inset;
+	        box-shadow: #ffb871 0 1px 4px 0 inset;
 	color:#000;
 }
 .xdsoft_datetimepicker.xdsoft_dark .xdsoft_calendar td.xdsoft_highlighted_mint {
 	background: #c1ffc9;
-	box-shadow: #00dd1c 0 1px 4px 0 inset;
+	-webkit-box-shadow: #00dd1c 0 1px 4px 0 inset;
+	        box-shadow: #00dd1c 0 1px 4px 0 inset;
 	color:#000;
 }
 
@@ -568,7 +590,8 @@
 .xdsoft_datetimepicker.xdsoft_dark .xdsoft_calendar td.xdsoft_current,
 .xdsoft_datetimepicker.xdsoft_dark .xdsoft_timepicker .xdsoft_time_box >div >div.xdsoft_current {
 	background: #cc5500;
-	box-shadow: #b03e00 0 1px 3px 0 inset;
+	-webkit-box-shadow: #b03e00 0 1px 3px 0 inset;
+	        box-shadow: #b03e00 0 1px 3px 0 inset;
 	color: #000;
 }
 
@@ -635,7 +658,8 @@
 .slick-slide img {
     width: 100%;
     height: auto;
-    object-fit: cover;
+    -o-object-fit: cover;
+       object-fit: cover;
 }
 
 .dotsContainer {
@@ -657,7 +681,8 @@
     width: 15px;
     height: 15px;
     background-color: rgba(128, 128, 128, 0.5);
-    border-radius: 50%;
+    -webkit-border-radius: 50%;
+            border-radius: 50%;
     line-height: 1;
 }
 .dotsContainer .slick-dots li:first-child {

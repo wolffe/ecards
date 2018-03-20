@@ -650,7 +650,9 @@ function ecard_options_page() {
                                         <option value="">Select eCard appearance...</option>
                                         <option value="carousel" <?php if (get_option('ecard_use_display') === 'carousel') echo 'selected'; ?>>Carousel</option>
                                         <option value="masonry" <?php if (get_option('ecard_use_display') === 'masonry') echo 'selected'; ?>>Masonry Grid</option>
+                                        <option value="none" <?php if (get_option('ecard_use_display') === 'none') echo 'selected'; ?>>None</option>
                                     </select>
+                                    <br><small>Use "None" only if you plan to style the grid yourself.</small>
                                 </p>
     		                </td>
     		            </tr>
