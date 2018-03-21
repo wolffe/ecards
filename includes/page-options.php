@@ -118,10 +118,9 @@ function ecard_options_page() {
                 <div id="gb-ad-content">
                     <div class="inside">
                         <p><strong>Thank you for using eCards!</strong></p>
-                        <p>If you enjoy this plugin, do not forget to <a href="https://codecanyon.net/item/wordpress-ecards/1051966" rel="external">rate it on CodeCanyon</a>! We work hard to update it, fix bugs, add new features and make it compatible with the latest web technologies.</p>
+                        <p>If you enjoy this plugin, do not forget to <a href="https://codecanyon.net/item/wordpress-ecards/1051966" rel="external">rate it on CodeCanyon</a>!</p>
                     </div>
                     <div class="gb-footer">
-                        <p><img src="' . plugins_url('img/gb-logo-white-512.png', dirname(__FILE__)) . '" alt="getButterfly"></p>
                         <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external">official website</a>. <a href="https://getbutterfly.com/members/documentation/ecards/" class="gb-documentation">eCards Documentation</a>.<br>&copy;' . date('Y') . ' <a href="https://getbutterfly.com/" rel="external"><strong>getButterfly</strong>.com</a> &middot; <small>Code wrangling since 2005</small></p>
                     </div>
                 </div>

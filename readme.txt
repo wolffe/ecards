@@ -10,14 +10,12 @@ License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 == Description ==
-eCards is a WordPress plugin used to send electronic cards to friends. It can be implemented in a page, a post or the sidebar.
+eCards is a WordPress plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar.
 
 There are two ways you can use this plugin:
 
 1. Add the shortcode [ecard] to a post or a page;
 2. Call the function from a template file: <?php if (function_exists('display_ecardMe')) { echo display_ecardMe(); } ?>;
-3. Use the shortcode [ecard_counter] to display the number of eCards sent;
-4. Call the function from a template file: <?php if (function_exists('display_ecardCounter')) { echo display_ecardCounter(); } ?>.
 
 == Installation ==
 
@@ -27,6 +25,11 @@ There are two ways you can use this plugin:
 4. A new eCards menu will appear in WordPress with options, and general help
 
 == Changelog ==
+
+= 4.5.1 =
+* UPDATE: Removed getButterfly logo
+* UPDATE: Removed wording from getButterfly ad box
+* UPDATE: Tweaked plugin description
 
 = 4.5.0 =
 * FIX: Fixed CSS compatibility with IE
