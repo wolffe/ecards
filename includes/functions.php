@@ -51,19 +51,6 @@ add_action( 'init', 'ecard_cpt', 0 );
 
 
 
-function ecards_save() {
-    global $wpdb;
-
-    $ecards_stats_table = $wpdb->prefix . 'ecards_stats';
-    $ecards_stats_now = date('Y-m-d');
-    $cards_sent = 0;
-
-    $wpdb->query($wpdb->prepare("INSERT INTO `$ecards_stats_table` (date, sent) VALUES (%s, %d) ON DUPLICATE KEY UPDATE sent = sent + 1", $ecards_stats_now, $cards_sent));
-
-	$ecard_counter = get_option('ecard_counter');
-    update_option('ecard_counter', ($ecard_counter + 1));
-}
-
 function ecards_return_image_sizes() {
     global $_wp_additional_image_sizes;
 
@@ -165,7 +152,7 @@ function ecard_send_later($ecard_id) {
     if (!empty($ecard_email_cc))
         wp_mail($ecard_email_from, $subject, $ecard_email_message, $headers);
 
-    ecards_save();
+    ecards_conversion(get_the_ID());
 }
 
 function eCardsGetVersion() {
@@ -200,4 +187,34 @@ function ecards_detach_callback() {
     update_post_meta($_POST['whatPost'], '_ecards_additional_images', array_values($additionalImages));
 
     exit;
+}
+
+function ecards_impression($id, $count = true) {
+    $impressionCount = get_post_meta($id, '_ecards_impressions', true);
+
+    if ($impressionCount == '') {
+        $impressionCount = 0;
+    }
+
+    if ($count === true) {
+        $impressionCount++;
+        update_post_meta($id, '_ecards_impressions', $impressionCount);
+    }
+
+    return $impressionCount;
+}
+
+function ecards_conversion($id, $count = true) {
+    $conversionCount = get_post_meta($id, '_ecards_conversions', true);
+
+    if ($conversionCount == '') {
+        $conversionCount = 0;
+    }
+
+    if ($count === true) {
+        $conversionCount++;
+        update_post_meta($id, '_ecards_conversions', $conversionCount);
+    }
+
+    return $conversionCount;
 }

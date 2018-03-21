@@ -2,10 +2,10 @@
 Contributors: butterflymedia
 Tags: akismet, ecard, electronic card, flash card, greeting card, paypal, postcard
 License: GPLv3
-Requires at least: 4.6
+Requires at least: 4.7
 Tested up to: 4.9.4
-Requires PHP: 5.5
-Stable tag: 4.4.7
+Requires PHP: 5.6
+Stable tag: 4.4.8
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -28,13 +28,16 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
-= 4.4.7 =
+= 4.4.8 =
 * FIX: Fixed CSS compatibility with IE
 * UPDATE: Added basic template for eCards grid
 * UPDATE: Show eCards in WordPress Dashboard by default
 * UPDATE: Removed new eCard CPT capability (eCards are read only)
-* TODO: Basic stats
-* TODO: Remove sparklines
+* UPDATE: Removed SparklinesJS
+* UPDATE: Removed old, generic stats
+* UPDATE: Removed [ecard_counter] shortcode
+* UPDATE: Removed jQuery dependency
+* FEATURE: Added basic stats
 
 = 4.4.6 =
 * FIX: Fixed wp_mail() headers compatibility with PHP 7+

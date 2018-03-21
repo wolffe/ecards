@@ -1,10 +1,8 @@
 <?php
-if(!defined('ABSPATH')) exit; // Exit if accessed directly
+if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 function ecard_options_page() {
-    $ecard_counter = get_option('ecard_counter');
-
-    if(isset($_POST['info_settings_update'])) {
+    if (isset($_POST['info_settings_update'])) {
         update_option('ecard_label', sanitize_text_field($_POST['ecard_label']));
 
         update_option('ecard_dropbox_private', sanitize_text_field($_POST['ecard_dropbox_private']));
@@ -25,8 +23,7 @@ function ecard_options_page() {
         update_option('ecard_user_create', sanitize_text_field($_POST['ecard_user_create']));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
-    }
-    if(isset($_POST['info_payment_update'])) {
+    } else if (isset($_POST['info_payment_update'])) {
         update_option('ecard_restrictions', sanitize_text_field($_POST['ecard_restrictions']));
         update_option('ecard_restrictions_message', esc_html(stripslashes_deep($_POST['ecard_restrictions_message'])));
 
@@ -46,14 +43,12 @@ function ecard_options_page() {
         update_option('p2v_cbt', sanitize_text_field($_POST['p2v_cbt']));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
-    }
-    if (isset($_POST['info_designer_update'])) {
+    } else if (isset($_POST['info_designer_update'])) {
         update_option('ecard_title', stripslashes($_POST['ecard_title']));
         update_option('ecard_template', stripslashes($_POST['ecard_template']));
         update_option('ecard_image_size_email', sanitize_text_field($_POST['ecard_image_size_email']));
         update_option('ecard_body_toggle', sanitize_text_field($_POST['ecard_body_toggle']));
-    }
-    if(isset($_POST['info_email_update'])) {
+    } else if (isset($_POST['info_email_update'])) {
         update_option('ecard_noreply', sanitize_email($_POST['ecard_noreply']));
 
         update_option('ecard_send_behaviour', sanitize_text_field($_POST['ecard_send_behaviour']));
@@ -63,8 +58,7 @@ function ecard_options_page() {
         update_option('ecard_allow_cc', sanitize_text_field($_POST["ecard_allow_cc"]));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
-    }
-    if(isset($_POST['info_labels_update'])) {
+    } else if (isset($_POST['info_labels_update'])) {
         update_option('ecard_label_name_own', stripslashes(sanitize_text_field($_POST['ecard_label_name_own'])));
         update_option('ecard_label_email_own', stripslashes(sanitize_text_field($_POST['ecard_label_email_own'])));
         update_option('ecard_label_email_friend', stripslashes(sanitize_text_field($_POST['ecard_label_email_friend'])));
@@ -76,13 +70,11 @@ function ecard_options_page() {
         update_option('ecard_link_anchor', stripslashes(sanitize_text_field($_POST['ecard_link_anchor'])));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
-    }
-    if(isset($_POST['info_appearance_update'])) {
+    } else if (isset($_POST['info_appearance_update'])) {
         update_option('ecard_use_display', sanitize_text_field($_POST['ecard_use_display']));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
-    }
-    if (isset($_POST['info_debug_update'])) {
+    } else if (isset($_POST['info_debug_update'])) {
         $headers[] = "Content-Type: text/html;";
 
         if (!empty($_POST['ecard_test_email']) && wp_mail($_POST['ecard_test_email'], 'eCards test email', 'Testing eCards plugin...', $headers)) {
@@ -92,12 +84,8 @@ function ecard_options_page() {
         }
 
         echo '<div id="message" class="updated notice is-dismissible"><p>Options updated successfully!</p></div>';
-    } ?>
-    <style>
-    .ecards-lite-icon { background-color: #F39C12; color: #ffffff; padding: 2px 4px; font-size: 11px; text-transform: uppercase; border-radius: 3px; font-weight: 400; border-left: 4px solid rgba(0, 0, 0, 0.25); text-shadow: none; }
-    .ecards-pro-icon { background-color: #9B59B6; color: #ffffff; padding: 2px 4px; font-size: 11px; text-transform: uppercase; border-radius: 3px; font-weight: 400; border-left: 4px solid rgba(0, 0, 0, 0.25); text-shadow: none; }
-    .ecards-pro-label { opacity: 0.75; cursor: not-allowed !important; }
-    </style>
+    }
+    ?>
     <div class="wrap">
 		<h2>eCards</h2>
 
@@ -112,21 +100,20 @@ function ecard_options_page() {
         }
 
 		$active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'ecards_dashboard';
-		if(isset($_GET['tab']))
-			$active_tab = $_GET['tab'];
+		$page_tab = 'edit.php?post_type=ecard&page=ecard_options_page&tab=ecards_';
 		?>
 		<h2 class="nav-tab-wrapper">
-			<a href="?page=ecards&amp;tab=ecards_dashboard" class="nav-tab <?php echo $active_tab === 'ecards_dashboard' ? 'nav-tab-active' : ''; ?>"><?php _e('Dashboard', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=ecards_settings" class="nav-tab <?php echo $active_tab === 'ecards_settings' ? 'nav-tab-active' : ''; ?>"><?php _e('Settings', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=ecards_appearance" class="nav-tab <?php echo $active_tab === 'ecards_appearance' ? 'nav-tab-active' : ''; ?>"><?php _e('Appearance', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=designer" class="nav-tab <?php echo $active_tab === 'designer' ? 'nav-tab-active' : ''; ?>"><?php _e('eCard Designer', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=ecards_email" class="nav-tab <?php echo $active_tab === 'ecards_email' ? 'nav-tab-active' : ''; ?>"><?php _e('Email Options', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=ecards_payment" class="nav-tab <?php echo $active_tab === 'ecards_payment' ? 'nav-tab-active' : ''; ?>"><?php _e('Restrictions &amp; Payment', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=ecards_labels" class="nav-tab <?php echo $active_tab === 'ecards_labels' ? 'nav-tab-active' : ''; ?>"><?php _e('Labels', 'ecards'); ?></a>
-			<a href="?page=ecards&amp;tab=ecards_diagnostics" class="nav-tab <?php echo $active_tab === 'ecards_diagnostics' ? 'nav-tab-active' : ''; ?>"><?php _e('Diagnostics', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>dashboard" class="nav-tab <?php echo $active_tab === 'ecards_dashboard' ? 'nav-tab-active' : ''; ?>"><?php _e('Dashboard', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>settings" class="nav-tab <?php echo $active_tab === 'ecards_settings' ? 'nav-tab-active' : ''; ?>"><?php _e('Settings', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>appearance" class="nav-tab <?php echo $active_tab === 'ecards_appearance' ? 'nav-tab-active' : ''; ?>"><?php _e('Appearance', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>designer" class="nav-tab <?php echo $active_tab === 'ecards_designer' ? 'nav-tab-active' : ''; ?>"><?php _e('eCard Designer', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>email" class="nav-tab <?php echo $active_tab === 'ecards_email' ? 'nav-tab-active' : ''; ?>"><?php _e('Email Options', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>payment" class="nav-tab <?php echo $active_tab === 'ecards_payment' ? 'nav-tab-active' : ''; ?>"><?php _e('Restrictions &amp; Payment', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>labels" class="nav-tab <?php echo $active_tab === 'ecards_labels' ? 'nav-tab-active' : ''; ?>"><?php _e('Labels', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>diagnostics" class="nav-tab <?php echo $active_tab === 'ecards_diagnostics' ? 'nav-tab-active' : ''; ?>"><?php _e('Diagnostics', 'ecards'); ?></a>
+			<a href="<?php echo $page_tab; ?>statistics" class="nav-tab <?php echo $active_tab === 'ecards_statistics' ? 'nav-tab-active' : ''; ?>"><?php _e('Statistics', 'ecards'); ?></a>
 		</h2>
-		<?php if($active_tab === 'ecards_dashboard') { ?>
-            <?php
+		<?php if ($active_tab === 'ecards_dashboard') {
             echo '<div id="gb-ad-ecards">
                 <div id="gb-ad-content">
                     <div class="inside">
@@ -140,21 +127,6 @@ function ecard_options_page() {
                 </div>
             </div>';
             ?>
-
-            <div class="ecards-stats">
-                <span class="ecards-inlinebar">
-                    <?php
-                    global $wpdb;
-
-                    $results = $wpdb->get_results("SELECT sent FROM `" . $wpdb->prefix . "ecards_stats` ORDER BY date DESC LIMIT 30", ARRAY_A);
-                    foreach($results as $result) {
-                        echo $result['sent'] . ', ';
-                    }
-                    ?>0
-                </span>
-                <?php $last30 = $wpdb->get_var("SELECT SUM(sent) FROM (SELECT sent FROM `" . $wpdb->prefix . "ecards_stats` ORDER BY date DESC limit 30) as howmany"); ?>
-                <div><small><b><?php echo $ecard_counter; ?></b> total eCards sent, from which <b><?php echo $last30; ?></b> in the past 30 days.</small></div>
-            </div>
 
 			<div id="poststuff">
 				<div class="postbox">
@@ -172,13 +144,9 @@ function ecard_options_page() {
                             <small>1.</small> Add the <code>[ecard]</code> shortcode to a post or a page or call the function from a template file:<br>
                             <code>&lt;?php if(function_exists('display_ecardMe')) echo display_ecardMe(); ?&gt;</code>
                         </p>
-                        <p>
-                            <small>2.</small> Use the <code>[ecard_counter]</code> shortcode to display the number of eCards sent or call the function from a template file (example: <code>[ecard_counter]</code> eCards sent so far!):<br>
-                            <code>&lt;?php if(function_exists('display_ecardCounter')) echo display_ecardCounter(); ?&gt;</code>
-                        </p>
-                        <p><small>3.</small> Use the <code>[paypal amount=8][ecard][/paypal]</code> shortcode to hide the eCard form and require payment. Only guests and non-members see the payment button. Members always see the hidden content.</p>
+                        <p><small>2.</small> Use the <code>[paypal amount=8][ecard][/paypal]</code> shortcode to hide the eCard form and require payment. Only guests and non-members see the payment button. Members always see the hidden content.</p>
 
-                        <p><small>4.</small> Use <code>noselect</code> as ALT text for attached images you do not want included as eCards.</p>
+                        <p><small>3.</small> Use <code>noselect</code> as ALT text for attached images you do not want included as eCards.</p>
 
                         <h3>Styling examples (CSS classes)</h3>
 						<p>Use <code>.ecard-confirmation</code> class to style the confirmation message, use <code>.ecard-error</code> class to style the error message.</p>
@@ -187,7 +155,7 @@ function ecard_options_page() {
 					</div>
 				</div>
 			</div>
-		<?php } if($active_tab === 'ecards_settings') { ?>
+		<?php } else if ($active_tab === 'ecards_settings') { ?>
 			<form method="post" action="">
     			<h3 class="title"><?php _e('eCards Settings', 'ecards'); ?></h3>
 
@@ -312,7 +280,7 @@ function ecard_options_page() {
                 <hr>
                 <p><input type="submit" name="info_settings_update" class="button button-primary" value="Save Changes"></p>
 			</form>
-		<?php } if($active_tab === 'ecards_payment') { ?>
+		<?php } else if ($active_tab === 'ecards_payment') { ?>
 			<form method="post" action="">
     			<h3 class="title"><?php _e('eCards Restrictions and Payment', 'ecards'); ?></h3>
                 <p>Restricting access to members only does not require payment. It only requires a user to be logged into your WordPress site.</p>
@@ -428,7 +396,7 @@ function ecard_options_page() {
                 <hr>
 				<p><input type="submit" name="info_payment_update" class="button button-primary" value="Save Changes"></p>
 			</form>
-        <?php } if ($active_tab === 'designer') { ?>
+        <?php } else if ($active_tab === 'ecards_designer') { ?>
             <form method="post" action="">
                 <h3 class="title"><?php _e('eCard Designer', 'ecards'); ?></h3>
 
@@ -490,7 +458,7 @@ function ecard_options_page() {
                 <hr>
     			<p><input type="submit" name="info_designer_update" class="button button-primary" value="Save Changes"></p>
 			</form>
-		<?php } if ($active_tab === 'ecards_email') { ?>
+		<?php } else if ($active_tab === 'ecards_email') { ?>
     		<form method="post" action="">
     			<h3 class="title"><?php _e('Email Settings', 'ecards'); ?></h3>
                 <p><b>Note:</b> To avoid your email adress being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address. Use a plugin to set custom <b>From Name</b> and <b>From Email</b> headers. We recommend <a href="https://wordpress.org/plugins/wp-mailfrom-ii/" rel="external">WP Mail From II</a>.</p>
@@ -553,7 +521,7 @@ function ecard_options_page() {
                 <hr>
     			<p><input type="submit" name="info_email_update" class="button button-primary" value="Save Changes"></p>
 			</form>
-		<?php } if($active_tab === 'ecards_labels') { ?>
+		<?php } else if ($active_tab === 'ecards_labels') { ?>
 			<form method="post" action="">
     			<h3 class="title"><?php _e('Labels', 'ecards'); ?></h3>
     			<p>Use the labels to personalize or translate your eCards form.</p>
@@ -628,7 +596,7 @@ function ecard_options_page() {
 				<hr>
 				<p><input type="submit" name="info_labels_update" class="button button-primary" value="Save Changes"></p>
 			</form>
-		<?php } if($active_tab === 'ecards_appearance') { ?>
+		<?php } else if ($active_tab === 'ecards_appearance') { ?>
 			<form method="post" action="">
     			<h3 class="title"><?php _e('Appearance', 'ecards'); ?></h3>
     			<p>Customize the appearance of your eCards.</p>
@@ -654,7 +622,7 @@ function ecard_options_page() {
 				<hr>
 				<p><input type="submit" name="info_appearance_update" class="button button-primary" value="Save Changes"></p>
 			</form>
-		<?php } if($active_tab === 'ecards_diagnostics') { ?>
+		<?php } else if ($active_tab === 'ecards_diagnostics') { ?>
 			<form method="post" action="">
     			<h3 class="title"><?php _e('Diagnostics', 'ecards'); ?></h3>
                 <p>Try using <a href="https://wordpress.org/plugins/wp-mail-smtp/" rel="external">WP Mail SMTP</a> plugin (free) if <code>wp_mail()</code> is not working.</p>
@@ -673,6 +641,66 @@ function ecard_options_page() {
                 <hr>
                 <p><input type="submit" name="info_debug_update" class="button button-primary" value="<?php _e('Test/Save Changes', 'ecards'); ?>"></p>
 			</form>
-		<?php } ?>
+		<?php } else if ($active_tab === 'ecards_statistics') { ?>
+			<h3 class="title"><?php _e('Statistics', 'ecards'); ?></h3>
+            <?php
+            $args = array(
+                'post_type' => array('post', 'page', 'ecard'),
+                'post_status' => array('publish', 'private'),
+                'posts_per_page' => 100,
+                'orderby' => 'meta_value_num',
+                'order' => 'DESC',
+                'meta_query' => array(
+                    array(
+                        'key' => '_ecards_impressions',
+                    ),
+                ),
+            );
+            $ecards_query = new WP_Query($args);
+
+            if ($ecards_query->have_posts()) {
+                echo '<table id="ecards-pager" class="wp-list-table widefat striped posts">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Title</th>
+                            <th scope="col">Impressions<br><small>Pageviews</small></th>
+                            <th scope="col">Conversions<br><small>eCards Sent</small></th>
+                            <th scope="col">Conversion Rate (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+                        while ($ecards_query->have_posts()) {
+                            $ecards_query->the_post();
+
+                            $impressions = (int) get_post_meta(get_the_ID(), '_ecards_impressions', true);
+                            $conversions = (int) get_post_meta(get_the_ID(), '_ecards_conversions', true);
+
+                            $conversionRate = ($impressions === 0 || $conversions === 0) ? 0 : number_format($conversions / $impressions * 100, 2);
+
+                            echo '<tr>
+                                <td>' . get_the_ID() . '</td>
+                                <td><a href="' . get_permalink(get_the_ID()) . '">' . get_the_title() . '</a></td>
+                                <td>' . $impressions . '</td>
+                                <td>' . $conversions . '</td>
+                                <td>' . $conversionRate . '</td>
+                            </tr>';
+                        }
+                    echo '</tbody>
+                </table>
+                <div id="pageNavPosition" class="ecards-pager-nav"></div>
+                <script>
+                var pager = new Pager("ecards-pager", 10); 
+
+                pager.init(); 
+                pager.showPageNav("pager", "pageNavPosition"); 
+                pager.showPage(1);
+                </script>';
+                wp_reset_postdata();
+            } else {
+                // no posts found
+            }
+        }
+        ?>
 	</div>
 <?php }

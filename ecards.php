@@ -68,16 +68,8 @@ function eCardsInstall() {
 
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     $tablename = $wpdb->prefix . 'ecards_stats';
-    if ($wpdb->get_var("SHOW TABLES LIKE `$tablename`") != $tablename) {
-        $sql = "CREATE TABLE IF NOT EXISTS `$tablename` (
-            `date` date NOT NULL,
-            `sent` mediumint(9) NOT NULL,
-            UNIQUE KEY `date` (`date`)
-        )";
-
-        dbDelta($sql);
-        maybe_convert_table_to_utf8mb4($tablename);
-    }
+    $sql = "DROP TABLE IF EXISTS `$tablename`;";
+    dbDelta($sql);
 
     // Default options
     add_option('ecard_label_name_own', 'Your name');
@@ -90,7 +82,6 @@ function eCardsInstall() {
     add_option('ecard_submit', 'Send eCard');
 
     add_option('ecard_label', 0);
-    add_option('ecard_counter', 0);
     add_option('ecard_link_anchor', 'Click to see your eCard!');
     add_option('ecard_redirection', 0);
     add_option('ecard_page_thankyou', '');
@@ -153,6 +144,7 @@ function eCardsInstall() {
     delete_option('ecard_use_masonry');
     delete_option('ecard_custom_style');
     delete_option('ecard_show_menu_ui');
+    delete_option('ecard_counter');
 }
 
 register_activation_hook(__FILE__, 'eCardsInstall');
@@ -160,13 +152,8 @@ register_activation_hook(__FILE__, 'eCardsInstall');
 
 
 function ecards_load_admin_style() {
-    if (isset($_GET['page']) && ((string) $_GET['page'] !== 'ecards')) {
-        return;
-    }
-
     wp_enqueue_style('ecards', plugins_url('css/admin.css', __FILE__), false, eCardsGetVersion());
-    wp_enqueue_script('sparklines', plugins_url('js/jquery.sparkline.min.js', __FILE__), array('jquery'), '2.1.2');
-    wp_enqueue_script('ecards', plugins_url('js/jquery.ecards.js', __FILE__), array('jquery', 'sparklines'), eCardsGetVersion());
+    wp_enqueue_script('ecards', plugins_url('js/jquery.ecards.js', __FILE__), array(), eCardsGetVersion());
 }
 add_action('admin_enqueue_scripts', 'ecards_load_admin_style');
 
@@ -316,6 +303,8 @@ add_shortcode('paypal', 'p2v_hide');
 // end PayPal
 
 function display_ecardMe() {
+    ecards_impression(get_the_ID());
+
     $ecard_submit = get_option('ecard_submit');
 
     $ecard_send_behaviour = get_option('ecard_send_behaviour');
@@ -499,16 +488,17 @@ function display_ecardMe() {
                 }
             }
 
+
             // redirection
             if ($ecard_redirection === '1' && $ecard_page_thankyou != '') {
-                ecards_save();
+                ecards_conversion(get_the_ID());
                 echo '<meta http-equiv="refresh" content="0;url=' . esc_url($ecard_page_thankyou) . '">';
                 exit;
             }
 
             $ecard_label_success = get_option('ecard_label_success');
             echo '<p class="ecard-confirmation"><strong>' . esc_html($ecard_label_success) . '</strong></p>';
-            ecards_save();
+            ecards_conversion(get_the_ID());
         }
     }
 
@@ -590,14 +580,7 @@ function display_ecardMe() {
     return $output;
 }
 
-function display_ecardCounter() {
-	$ecard_counter = get_option('ecard_counter');
-
-	return $ecard_counter;
-}
-
 add_shortcode('ecard', 'display_ecardMe');
-add_shortcode('ecard_counter', 'display_ecardCounter');
 
 add_action('wp_enqueue_scripts', 'ecard_enqueue_scripts');
 function ecard_enqueue_scripts() {
@@ -623,7 +606,8 @@ function ecard_enqueue_scripts() {
 
 // Displays options menu
 function ecard_add_option_page() {
-	add_options_page(esc_html__('eCards', 'ecards'), esc_html__('eCards', 'ecards'), 'manage_options', 'ecards', 'ecard_options_page');
+	//add_options_page(esc_html__('eCards', 'ecards'), esc_html__('eCards', 'ecards'), 'manage_options', 'ecards', 'ecard_options_page');
+    add_submenu_page('edit.php?post_type=ecard', esc_html__('eCards Settings', 'ecards'), esc_html__('eCards Settings', 'ecards'), 'manage_options', 'ecard_options_page', 'ecard_options_page');
 }
 
 add_action('admin_menu', 'ecard_add_option_page');

@@ -39,21 +39,31 @@
     color: #F1C40F;
 }
 
-.ecards-stats {
-    text-align: center;
-    margin: 32px 0 16px 0;
+.ecards-lite-icon {
+    background-color: #F39C12;
+    color: #ffffff;
+    padding: 2px 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    border-radius: 3px;
+    font-weight: 400;
+    border-left: 4px solid rgba(0, 0, 0, 0.25);
+    text-shadow: none;
 }
-.ecards-stats small {
-    color: #666666;
-    margin: 4px 0 0 0;
-    display: inline-block;
+.ecards-pro-icon {
+    background-color: #9B59B6;
+    color: #ffffff;
+    padding: 2px 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    border-radius: 3px;
+    font-weight: 400;
+    border-left: 4px solid rgba(0, 0, 0, 0.25);
+    text-shadow: none;
 }
-.ecards-inlinebar {
-    opacity: 1;
-}
-.ecards-inlinebar canvas {
-    vertical-align: bottom;
-    max-width: 100%;
+.ecards-pro-label {
+    opacity: 0.75;
+    cursor: not-allowed !important;
 }
 
 .codor {
@@ -98,4 +108,23 @@
 }
 #twp-attach-post-images-list li a:hover {
     color: #C0392B;
+}
+
+.ecards-pager-nav {
+    margin: 16px 0;
+}
+.ecards-pager-nav span {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 1px;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: #FFFFFF;
+    border: 1px solid #e1e1e1;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+.ecards-pager-nav span:hover,
+.ecards-pager-nav .pg-selected {
+    background-color: #f9f9f9;
+    border: 1px solid #CCCCCC;
 }
