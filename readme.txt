@@ -5,7 +5,7 @@ License: GPLv3
 Requires at least: 4.7
 Tested up to: 4.9.4
 Requires PHP: 5.6
-Stable tag: 4.4.8
+Stable tag: 4.5.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -28,8 +28,9 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
-= 4.4.8 =
+= 4.5.0 =
 * FIX: Fixed CSS compatibility with IE
+* FIX: Admin UI tweaks
 * UPDATE: Added basic template for eCards grid
 * UPDATE: Show eCards in WordPress Dashboard by default
 * UPDATE: Removed new eCard CPT capability (eCards are read only)
@@ -37,6 +38,10 @@ There are two ways you can use this plugin:
 * UPDATE: Removed old, generic stats
 * UPDATE: Removed [ecard_counter] shortcode
 * UPDATE: Removed jQuery dependency
+* UPDATE: Removed WP Mail From II recommendation
+* UPDATE: Updated WordPress requirements
+* UPDATE: Updated PHP requirements
+* UPDATE: Removed unused table and options
 * FEATURE: Added basic stats
 
 = 4.4.6 =

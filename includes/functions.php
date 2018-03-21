@@ -218,3 +218,15 @@ function ecards_conversion($id, $count = true) {
 
     return $conversionCount;
 }
+
+function ecards_mail_from($mail_from_email) {
+	$site_mail_from_email = sanitize_email(get_option('ecard_noreply'));
+
+	if (empty($site_mail_from_email)) {
+		return $mail_from_email;
+	} else {
+		return $site_mail_from_email;
+	}
+}
+
+add_filter('wp_mail_from', 'ecards_mail_from', 1);

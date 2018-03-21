@@ -142,7 +142,7 @@ function ecard_options_page() {
 
                         <p>
                             <small>1.</small> Add the <code>[ecard]</code> shortcode to a post or a page or call the function from a template file:<br>
-                            <code>&lt;?php if(function_exists('display_ecardMe')) echo display_ecardMe(); ?&gt;</code>
+                            <code>&lt;?php if (function_exists('display_ecardMe')) { echo display_ecardMe(); } ?&gt;</code>
                         </p>
                         <p><small>2.</small> Use the <code>[paypal amount=8][ecard][/paypal]</code> shortcode to hide the eCard form and require payment. Only guests and non-members see the payment button. Members always see the hidden content.</p>
 
@@ -461,9 +461,8 @@ function ecard_options_page() {
 		<?php } else if ($active_tab === 'ecards_email') { ?>
     		<form method="post" action="">
     			<h3 class="title"><?php _e('Email Settings', 'ecards'); ?></h3>
-                <p><b>Note:</b> To avoid your email adress being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address. Use a plugin to set custom <b>From Name</b> and <b>From Email</b> headers. We recommend <a href="https://wordpress.org/plugins/wp-mailfrom-ii/" rel="external">WP Mail From II</a>.</p>
-
-                <p>Sometimes emails end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up an email address (ecards@yourdomain.com or noreply@yourdomain.com) and use a third-party plugin to override email options (<b>From Name</b> and <b>From Email</b>).</p>
+                <p><b>Note:</b> To avoid your email adress being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address.</p>
+                <p>Sometimes emails end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up a dedicated email address (ecards@yourdomain.com or noreply@yourdomain.com).</p>
 
                 <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP Mailer/Email Log</a>.</p>
                 <div class="postbox">
