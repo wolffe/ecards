@@ -548,7 +548,7 @@ function display_ecardMe() {
             $ecard_send_later = get_option('ecard_send_later');
             if ((int) $ecard_send_later === 1) {
                 $output .= '<p>
-                    <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option('ecard_label_send_time') . '</label> <input type="text" name="ecard_send_time" id="ecard_send_time" value="' . date('Y/m/d H:i') . '"> <a href="#" class="ecard-icon-calendar" onclick="NewCssCal(\'ecard_send_time\', \'yyyyMMdd\', \'arrow\', true, 24, false, \'future\'); return false;">&#128197;</a>
+                    <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option('ecard_label_send_time') . '</label> <input type="text" name="ecard_send_time" id="ecard_send_time" value="' . date('Y/m/d H:i') . '"> <a href="#" class="ecard-icon-calendar" onclick="NewCssCal(\'ecard_send_time\', \'yyyyMMdd\', true, 24, false, \'future\'); return false;">&#128197;</a>
                 </p>';
             }
 

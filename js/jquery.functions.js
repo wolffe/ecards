@@ -10,10 +10,10 @@ var winCal,
     WeekDayName2,
     exDateTime,
     selDate,
-    calSpanID = "calBorder",
+    calSpanID = 'calBorder',
     domStyle = null,
-    cnLeft = "0",
-    cnTop = "0",
+    cnLeft = 0,
+    cnTop = 0,
     xpos = 0,
     ypos = 0,
     calHeight = 0,
@@ -21,7 +21,7 @@ var winCal,
     TimeMode = 24,
     StartYear = (new Date()).getUTCFullYear(),
     EndYear = 10,
-    CalPosOffsetX = -1, 
+    CalPosOffsetX = -1,
     CalPosOffsetY = 0,
 
     SundayColor = '#BBBBBB',
@@ -31,32 +31,25 @@ var winCal,
     SelDateColor = "#8DD53C",
     HoverColor = "#E0FF38",
     DisableColor = "#999966",
-    CalBgColor = "#ffffff";
+    CalBgColor = "#ffffff",
 
-var WeekChar = 2;//number of character for week day. if 2 then Mo,Tu,We. if 3 then Mon,Tue,Wed.
-var DateSeparator = "-";//Date Separator, you can change it to "-" if you want.
-var ShowLongMonth = true;//Show long month name in Calendar header. example: "January".
-var ShowMonthYear = true;//Show Month and Year in Calendar header.
-var PrecedeZero = true;//Preceding zero [true|false]
-var MondayFirstDay = true;//true:Use Monday as first day; false:Sunday as first day. [true|false]
+    WeekChar = 2, // Number of characters for week day. If 2 then Mo, Tu, We. If 3 then Mon, Tue, Wed.
+    DateSeparator = '-',
+    ShowLongMonth = true,
+    ShowMonthYear = true,
+    PrecedeZero = true,
+    MondayFirstDay = true;
 
-//use the Month and Weekday in your preferred language.
 MonthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 WeekDayName1 = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 WeekDayName2 = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 
-//end Configurable parameters
 
-//end Global variable
-
-
-// Calendar prototype
 function Calendar(pDate, pCtrl) {
-	//Properties
-	this.Date = pDate.getDate();//selected date
-	this.Month = pDate.getMonth();//selected month number
-	this.Year = pDate.getFullYear();//selected year in 4 digits
+	this.Date = pDate.getDate();
+	this.Month = pDate.getMonth();
+	this.Year = pDate.getFullYear();
 	this.Hours = pDate.getHours();
 
 	if (pDate.getMinutes() < 10) {
@@ -75,7 +68,6 @@ function Calendar(pDate, pCtrl) {
 	this.Format = "ddMMyyyy";
 	this.Separator = DateSeparator;
 	this.ShowTime = false;
-	this.Scroller = "DROPDOWN";
 	if (pDate.getHours() < 12) {
 		this.AMorPM = "AM";
 	} else {
@@ -397,7 +389,7 @@ function GenCell(pValue, pHighLight, pColor, pClickable) { //Generate table cell
             if (Cal.ShowTime === true) {
                 PCellStr = "<td id='c" + PValue + "' class='calTD' style='text-align:center;cursor:pointer;background-color:"+pColor+"' onmousedown='selectDate(this," + PValue + ");'>" + PValue + "</td>";
             } else {
-                PCellStr = "<td class='calTD' style='text-align:center;cursor:pointer;background-color:" + pColor + "' onmouseover='changeBorder(this, 0);' onmouseout=\"changeBorder(this, 1, '" + pColor + "');\" onClick=\"javascript:callback('" + Cal.Ctrl + "','" + Cal.FormatDate(PValue) + "');\">" + PValue + "</td>";
+                PCellStr = "<td class='calTD' style='text-align:center;cursor:pointer;background-color:" + pColor + "' onClick=\"javascript:callback('" + Cal.Ctrl + "','" + Cal.FormatDate(PValue) + "');\">" + PValue + "</td>";
             }
 		} else {
             PCellStr = "<td style='text-align:center;background-color:"+pColor+"' class='calTD'>"+PValue+"</td>";
@@ -441,8 +433,6 @@ function RenderCssCal(bNewCal) {
 
 	headID,
 	e,
-	style,
-	cssText,
 	span;
 
 	calHeight = 0; // reset the window height on refresh
@@ -453,51 +443,17 @@ function RenderCssCal(bNewCal) {
 	//Table for Month & Year Selector
 
 	vCalHeader += "<tr><td colspan='7'><table border='0' width='200px' cellpadding='0' cellspacing='0'><tr>";
-	//******************Month and Year selector in dropdown list************************
 
-	if (Cal.Scroller === "DROPDOWN") {
-        vCalHeader += "<td align='center'><select name='MonthSelector' onChange='javascript:Cal.SwitchMth(this.selectedIndex);RenderCssCal();'>";
-		for (i = 0; i < 12; i += 1) {
-			if (i === Cal.Month) {
-				SelectStr = "Selected";
-			} else {
-				SelectStr = "";
-			}
-			vCalHeader += "<option " + SelectStr + " value=" + i + ">" + MonthName[i] + "</option>";
-		}
-
-		vCalHeader += "</select></td>";
-		//Year selector
-
-		vCalHeader += "<td align='center'><select name='YearSelector' size='1' onChange='javascript:Cal.SwitchYear(this.value);RenderCssCal();'>";
-		for (i = StartYear; i <= (dtToday.getFullYear() + EndYear); i += 1) {
-			if (i === Cal.Year) {
-				SelectStr = 'selected="selected"';
-			} else {
-				SelectStr = '';
-			}
-			vCalHeader += "<option " + SelectStr + " value=" + i + ">" + i + "</option>\n";
-		}
-		vCalHeader += "</select></td>\n";
-		calHeight += 30;
-	} else if (Cal.Scroller === "ARROW") {
-		vCalHeader += "<td><span id='dec_year' title='reverse year' onmousedown='javascript:Cal.DecYear();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>-</span></td>";//Year scroller (decrease 1 year)
-		vCalHeader += "<td><span id='dec_month' title='reverse month' onmousedown='javascript:Cal.DecMonth();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>&lt;</span></td>\n";//Month scroller (decrease 1 month)
-		vCalHeader += "<td width='70%' class='calR'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td>\n"; //Month and Year
-		vCalHeader += "<td><span id='inc_month' title='forward month' onmousedown='javascript:Cal.IncMonth();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>&gt;</span></td>\n";//Month scroller (increase 1 month)
-		vCalHeader += "<td><span id='inc_year' title='forward year' onmousedown='javascript:Cal.IncYear();RenderCssCal();'  onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>+</span></td>\n";//Year scroller (increase 1 year)
-		calHeight += 22;
-	}
+	vCalHeader += "<td><span id='dec_year' title='reverse year' onmousedown='javascript:Cal.DecYear();RenderCssCal();'>-</span></td>"; //Year scroller (decrease 1 year)
+	vCalHeader += "<td><span id='dec_month' title='reverse month' onmousedown='javascript:Cal.DecMonth();RenderCssCal();'>&lt;</span></td>\n"; //Month scroller (decrease 1 month)
+	vCalHeader += "<td width='70%' class='calR'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td>\n"; //Month and Year
+	vCalHeader += "<td><span id='inc_month' title='forward month' onmousedown='javascript:Cal.IncMonth();RenderCssCal();'>&gt;</span></td>\n"; //Month scroller (increase 1 month)
+	vCalHeader += "<td><span id='inc_year' title='forward year' onmousedown='javascript:Cal.IncYear();RenderCssCal();'>+</span></td>\n"; //Year scroller (increase 1 year)
+	calHeight += 22;
 
 	vCalHeader += "</tr></table></td></tr>";
 
 	//******************End Month and Year selector in arrow******************************
-
-	//Calendar header shows Month and Year
-	if (ShowMonthYear && Cal.Scroller === "DROPDOWN") {
-        vCalHeader += "<tr><td colspan='7' class='calR'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td></tr>";
-		calHeight += 19;
-	}
 
 	//Week day header
 
@@ -627,9 +583,9 @@ function RenderCssCal(bNewCal) {
 		vCalTime += "</td>\n<td align='right' valign='bottom' width='" + HourCellWidth + "px'></td></tr>";
 		vCalTime += "<tr><td colspan='8' style=\"text-align:center;\"><input style='width:60px;font-size:12px;' onClick='javascript:closewin(\"" + Cal.Ctrl + "\");'  type=\"button\" value=\"OK\">&nbsp;<input style='width:60px;font-size:12px;' onClick='javascript: winCal.style.visibility = \"hidden\"' type=\"button\" value=\"Cancel\"></td></tr>";
 	} else {
-	    vCalTime += "\n<tr>\n<td colspan='7' style=\"text-align:right;\">";
-	    //close button
-        vCalClosing += "<span id='close_cal' title='close'onmousedown='javascript:closewin(\"" + Cal.Ctrl + "\");' onmouseover='changeBorder(this, 0)'onmouseout='changeBorder(this, 1)' style='border:1px solid white; font-family: Arial;font-size: 10pt;'>x</span></td>";
+        vCalTime += "\n<tr>\n<td colspan='7' style=\"text-align:right;\">";
+        //close button
+        vCalClosing += "<span id='close_cal' title='close'onmousedown='javascript:closewin(\"" + Cal.Ctrl + "\");' style='border:1px solid white; font-size: 10pt;'>x</span></td>";
 
         vCalClosing += "</tr>";
 	}
@@ -689,18 +645,18 @@ function RenderCssCal(bNewCal) {
 }
 
 
-function NewCssCal(pCtrl, pFormat, pScroller, pShowTime, pTimeMode, pShowSeconds, pEnableDateMode) {
+function NewCssCal(pCtrl, pFormat, pShowTime, pTimeMode, pShowSeconds, pEnableDateMode) {
 	// get current date and time
 
 	dtToday = new Date();
 	Cal = new Calendar(dtToday);
 
 	if (pShowTime !== undefined) {
-	    if (pShowTime) {
-	        Cal.ShowTime = true;
-	    } else {
-	        Cal.ShowTime = false;
-	    }
+        if (pShowTime) {
+            Cal.ShowTime = true;
+        } else {
+            Cal.ShowTime = false;
+        }
 
 		if (pTimeMode) {
 			pTimeMode = parseInt(pTimeMode, 10);
@@ -731,14 +687,6 @@ function NewCssCal(pCtrl, pFormat, pScroller, pShowTime, pTimeMode, pShowSeconds
 	} else {
 		Cal.Format = "MMDDYYYY";
 	}
-
-	if (pScroller!== undefined && pScroller!=="") {
-		if (pScroller.toUpperCase() === "ARROW") {
-			Cal.Scroller = "ARROW";
-		} else {
-			Cal.Scroller = "DROPDOWN";
-		}
-    }
 
     if (pEnableDateMode !== undefined && (pEnableDateMode === "future" || pEnableDateMode === "past")) {
         Cal.EnableDateMode= pEnableDateMode;
@@ -898,22 +846,6 @@ function closewin(id) {
 	var CalId = document.getElementById(id);
 	CalId.focus();
 	winCal.style.visibility = 'hidden';
-}
-
-function changeBorder(element, col, oldBgColor) {
-	if (col === 0) {
-		element.style.background = HoverColor;
-		element.style.borderColor = "black";
-		element.style.cursor = "pointer";
-	} else {
-		if (oldBgColor) {
-			element.style.background = oldBgColor;
-		} else {
-			element.style.background = "white";
-		}
-		element.style.borderColor = "white";
-		element.style.cursor = "auto";
-	}
 }
 
 function selectDate(element, date) {
