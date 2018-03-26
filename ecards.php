@@ -548,7 +548,7 @@ function display_ecardMe() {
             $ecard_send_later = get_option('ecard_send_later');
             if ((int) $ecard_send_later === 1) {
                 $output .= '<p>
-                    <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option('ecard_label_send_time') . '</label> <input type="text" name="ecard_send_time" id="ecard_send_time" value="' . date('Y/m/d H:i') . '">
+                    <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option('ecard_label_send_time') . '</label> <input type="text" name="ecard_send_time" id="ecard_send_time" value="' . date('Y/m/d H:i') . '"> <a href="#" onclick="NewCssCal(\'ecard_send_time\', \'MMddyyyy\',\'arrow\', true, 24);">Pick date/time</a>
                 </p>';
             }
 
@@ -584,14 +584,7 @@ add_shortcode('ecard', 'display_ecardMe');
 
 add_action('wp_enqueue_scripts', 'ecard_enqueue_scripts');
 function ecard_enqueue_scripts() {
-    $ecard_send_later = get_option('ecard_send_later');
-
     wp_enqueue_style('ecards', plugins_url('css/vintage.css', __FILE__));
-
-    if ($ecard_send_later == 1) {
-        wp_enqueue_script('ecards-dtp', plugins_url('js/jquery.datetimepicker.full.min.js', __FILE__), array('jquery'), '2.5.4', true);
-        wp_enqueue_script('ecards-dtp-functions', plugins_url('js/jquery.dtp.js', __FILE__), array('jquery', 'ecards-dtp'), '1.0.0', true);
-    }
 
     if ((string) get_option('ecard_use_display') === 'carousel') {
         wp_enqueue_style('flickity', 'https://unpkg.com/flickity@2/dist/flickity.min.css');
@@ -606,7 +599,6 @@ function ecard_enqueue_scripts() {
 
 // Displays options menu
 function ecard_add_option_page() {
-	//add_options_page(esc_html__('eCards', 'ecards'), esc_html__('eCards', 'ecards'), 'manage_options', 'ecards', 'ecard_options_page');
     add_submenu_page('edit.php?post_type=ecard', esc_html__('eCards Settings', 'ecards'), esc_html__('eCards Settings', 'ecards'), 'manage_options', 'ecard_options_page', 'ecard_options_page');
 }
 

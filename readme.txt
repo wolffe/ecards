@@ -26,6 +26,10 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
+= 4.5.3 =
+* UPDATE: Replaced date/time picker with vanilla JavaScript (+speed, -weight)
+* UPDATE: Removed jQuery dependency from main eCards script
+
 = 4.5.1 =
 * UPDATE: Removed getButterfly logo
 * UPDATE: Removed wording from getButterfly ad box
