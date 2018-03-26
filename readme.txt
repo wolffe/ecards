@@ -5,7 +5,7 @@ License: GPLv3
 Requires at least: 4.7
 Tested up to: 4.9.4
 Requires PHP: 5.6
-Stable tag: 4.5.0
+Stable tag: 4.5.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,9 +26,9 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
-= 4.5.3 =
+= 4.5.2 =
 * UPDATE: Replaced date/time picker with vanilla JavaScript (+speed, -weight)
-* UPDATE: Removed jQuery dependency from main eCards script
+* UPDATE: Removed jQuery dependency from main eCards script (+speed)
 
 = 4.5.1 =
 * UPDATE: Removed getButterfly logo
