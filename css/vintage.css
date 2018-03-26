@@ -136,9 +136,37 @@
 
 
 
+.ecard-icon-calendar {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Symbol", "Segoe UI Emoji";
+}
+
+
+
 #calBorder table {
     margin: 0;
 }
 #calBorder table td {
     padding: 4px;
+}
+#calBorder .week-head-colour {
+    background-color: #DDDDDD;
+    font-weight: 700;
+}
+#calBorder input,
+#calBorder select {
+	font-family: inherit;
+	font-size: 12px;
+}
+
+#calBorder .calTD {
+	font-family: inherit;
+	font-size: 12px;
+	text-align: center;
+	border: 0;
+}
+#calBorder .calR {
+	font-family: inherit;
+	font-size: 12px;
+	text-align: center;
+	font-weight: 700;
 }

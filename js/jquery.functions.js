@@ -3,47 +3,42 @@
  */
 
 var winCal,
-    dtToday;
-var Cal;
-var MonthName;
-var WeekDayName1;
-var WeekDayName2;
-var exDateTime;//Existing Date and Time
-var selDate;//selected date. version 1.7
-var calSpanID = "calBorder"; // span ID
-var domStyle = null; // span DOM object with style
-var cnLeft = "0";//left coordinate of calendar span
-var cnTop = "0";//top coordinate of calendar span
-var xpos = 0; // mouse x position
-var ypos = 0; // mouse y position
-var calHeight = 0; // calendar height
-var CalWidth = 208;// calendar width
-var CellWidth = 30;// width of day cell.
-var TimeMode = 24;// TimeMode value. 12 or 24
-var StartYear = 1940; //First Year in drop down year selection
-var EndYear = 5; // The last year of pickable date. if current year is 2011, the last year that still picker will be 2016 (2011+5)
-var CalPosOffsetX = -1; //X position offset relative to calendar icon, can be negative value
-var CalPosOffsetY = 0; //Y position offset relative to calendar icon, can be negative value
+    dtToday,
+    Cal,
+    MonthName,
+    WeekDayName1,
+    WeekDayName2,
+    exDateTime,
+    selDate,
+    calSpanID = "calBorder",
+    domStyle = null,
+    cnLeft = "0",
+    cnTop = "0",
+    xpos = 0,
+    ypos = 0,
+    calHeight = 0,
+    CalWidth = 208,
+    TimeMode = 24,
+    StartYear = (new Date()).getUTCFullYear(),
+    EndYear = 10,
+    CalPosOffsetX = -1, 
+    CalPosOffsetY = 0,
 
-//Configurable parameters start
-var MonthYearColor = "#cc0033"; //Font Color of Month and Year in Calendar header.
-var WeekHeadColor = "#18861B"; //var WeekHeadColor="#18861B";//Background Color in Week header.
-var SundayColor = "#C0F64F"; //var SundayColor="#C0F64F";//Background color of Sunday.
-var SaturdayColor = "#C0F64F"; //Background color of Saturday.
-var WeekDayColor = "#FFEDA6"; //Background color of weekdays.
-var TodayColor = "#ffbd35"; //var TodayColor="#FFFF33";//Background color of today.
-var SelDateColor = "#8DD53C"; //var SelDateColor = "#8DD53C";//Backgrond color of selected date in textbox.
-var YrSelColor = "#cc0033"; //color of font of Year selector.
-var HoverColor = "#E0FF38"; //color when mouse move over.
-var DisableColor = "#999966"; //color of disabled cell.
-var CalBgColor = "#ffffff"; //Background color of Calendar window.
+    SundayColor = '#BBBBBB',
+    SaturdayColor = '#BBBBBB',
+    WeekDayColor = '#EEEEEE',
+    TodayColor = "#ffbd35",
+    SelDateColor = "#8DD53C",
+    HoverColor = "#E0FF38",
+    DisableColor = "#999966",
+    CalBgColor = "#ffffff";
 
 var WeekChar = 2;//number of character for week day. if 2 then Mo,Tu,We. if 3 then Mon,Tue,Wed.
 var DateSeparator = "-";//Date Separator, you can change it to "-" if you want.
 var ShowLongMonth = true;//Show long month name in Calendar header. example: "January".
 var ShowMonthYear = true;//Show Month and Year in Calendar header.
 var PrecedeZero = true;//Preceding zero [true|false]
-var MondayFirstDay = true;//true:Use Monday as first day; false:Sunday as first day. [true|false]  //added in version 1.7
+var MondayFirstDay = true;//true:Use Monday as first day; false:Sunday as first day. [true|false]
 
 //use the Month and Weekday in your preferred language.
 MonthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -87,7 +82,7 @@ function Calendar(pDate, pCtrl) {
 		this.AMorPM = "PM";
 	}
 	this.ShowSeconds = false;
-	this.EnableDateMode = ""
+	this.EnableDateMode = "";
 }
 
 Calendar.prototype.GetMonthIndex = function (shortMonthName) {
@@ -446,7 +441,6 @@ function RenderCssCal(bNewCal) {
 
 	headID,
 	e,
-	cssStr,
 	style,
 	cssText,
 	span;
@@ -487,11 +481,11 @@ function RenderCssCal(bNewCal) {
 		vCalHeader += "</select></td>\n";
 		calHeight += 30;
 	} else if (Cal.Scroller === "ARROW") {
-		vCalHeader += "<td><span id='dec_year' title='reverse year' onmousedown='javascript:Cal.DecYear();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)' style='border:1px solid white; color:" + YrSelColor + "'>-</span></td>";//Year scroller (decrease 1 year)
-		vCalHeader += "<td><span id='dec_month' title='reverse month' onmousedown='javascript:Cal.DecMonth();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)' style='border:1px solid white'>&lt;</span></td>\n";//Month scroller (decrease 1 month)
-		vCalHeader += "<td width='70%' class='calR' style='color:" + YrSelColor + "'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td>\n"; //Month and Year
-		vCalHeader += "<td><span id='inc_month' title='forward month' onmousedown='javascript:Cal.IncMonth();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)' style='border:1px solid white'>&gt;</span></td>\n";//Month scroller (increase 1 month)
-		vCalHeader += "<td><span id='inc_year' title='forward year' onmousedown='javascript:Cal.IncYear();RenderCssCal();'  onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)' style='border:1px solid white; color:" + YrSelColor + "'>+</span></td>\n";//Year scroller (increase 1 year)
+		vCalHeader += "<td><span id='dec_year' title='reverse year' onmousedown='javascript:Cal.DecYear();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>-</span></td>";//Year scroller (decrease 1 year)
+		vCalHeader += "<td><span id='dec_month' title='reverse month' onmousedown='javascript:Cal.DecMonth();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>&lt;</span></td>\n";//Month scroller (decrease 1 month)
+		vCalHeader += "<td width='70%' class='calR'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td>\n"; //Month and Year
+		vCalHeader += "<td><span id='inc_month' title='forward month' onmousedown='javascript:Cal.IncMonth();RenderCssCal();' onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>&gt;</span></td>\n";//Month scroller (increase 1 month)
+		vCalHeader += "<td><span id='inc_year' title='forward year' onmousedown='javascript:Cal.IncYear();RenderCssCal();'  onmouseover='changeBorder(this, 0)' onmouseout='changeBorder(this, 1)'>+</span></td>\n";//Year scroller (increase 1 year)
 		calHeight += 22;
 	}
 
@@ -501,7 +495,7 @@ function RenderCssCal(bNewCal) {
 
 	//Calendar header shows Month and Year
 	if (ShowMonthYear && Cal.Scroller === "DROPDOWN") {
-        vCalHeader += "<tr><td colspan='7' class='calR' style='color:" + MonthYearColor + "'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td></tr>";
+        vCalHeader += "<tr><td colspan='7' class='calR'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td></tr>";
 		calHeight += 19;
 	}
 
@@ -514,7 +508,7 @@ function RenderCssCal(bNewCal) {
 		WeekDayName = WeekDayName1;
 	}
 	for (i = 0; i < 7; i += 1) {
-        vCalHeader += "<td style='background-color:"+WeekHeadColor+";width:"+CellWidth+"px;color:#FFFFFF' class='calTD'>" + WeekDayName[i].substr(0, WeekChar) + "</td>";
+        vCalHeader += "<td class='calTD week-head-colour'>" + WeekDayName[i].substr(0, WeekChar) + "</td>";
 	}
 
 	calHeight += 19;
@@ -668,17 +662,6 @@ function RenderCssCal(bNewCal) {
 		e.text = funcCalback;
 		headID.appendChild(e);
 		// add stylesheet to the span cal
-
-		cssStr = ".calTD {font-family: inherit; font-size: 12px; text-align: center; border:0; }\n";
-		cssStr += ".calR {font-family: inherit; font-size: 12px; text-align: center; font-weight: bold;}";
-
-		style = document.createElement("style");
-		style.type = "text/css";
-		style.rel = "stylesheet";
-		cssText = document.createTextNode(cssStr);
-		style.appendChild(cssText);
-
-		headID.appendChild(style);
 
         // create the outer frame
 		span = document.createElement("span");
