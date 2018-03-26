@@ -26,8 +26,6 @@ var CalPosOffsetX = -1; //X position offset relative to calendar icon, can be ne
 var CalPosOffsetY = 0; //Y position offset relative to calendar icon, can be negative value
 
 //Configurable parameters start
-var SpanBorderColor = "#000000";//span border color
-var SpanBgColor = "#FFFFFF"; //span background color
 var MonthYearColor = "#cc0033"; //Font Color of Month and Year in Calendar header.
 var WeekHeadColor = "#18861B"; //var WeekHeadColor="#18861B";//Background Color in Week header.
 var SundayColor = "#C0F64F"; //var SundayColor="#C0F64F";//Background color of Sunday.
@@ -455,9 +453,7 @@ function RenderCssCal(bNewCal) {
 
 	calHeight = 0; // reset the window height on refresh
 
-	// Set the default cursor for the calendar
-
-	winCalData = "<span style='cursor:auto;'>";
+	winCalData = '';
 	vCalHeader = "<table style='background-color:"+CalBgColor+";width:200px;padding:0;margin:5px auto 5px auto'><tbody>";
 
 	//Table for Month & Year Selector
@@ -505,7 +501,7 @@ function RenderCssCal(bNewCal) {
 
 	//Calendar header shows Month and Year
 	if (ShowMonthYear && Cal.Scroller === "DROPDOWN") {
-	    vCalHeader += "<tr><td colspan='7' class='calR' style='color:" + MonthYearColor + "'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td></tr>";
+        vCalHeader += "<tr><td colspan='7' class='calR' style='color:" + MonthYearColor + "'>" + Cal.GetMonthName(ShowLongMonth) + " " + Cal.Year + "</td></tr>";
 		calHeight += 19;
 	}
 
@@ -518,7 +514,7 @@ function RenderCssCal(bNewCal) {
 		WeekDayName = WeekDayName1;
 	}
 	for (i = 0; i < 7; i += 1) {
-	    vCalHeader += "<td style='background-color:"+WeekHeadColor+";width:"+CellWidth+"px;color:#FFFFFF' class='calTD'>" + WeekDayName[i].substr(0, WeekChar) + "</td>";
+        vCalHeader += "<td style='background-color:"+WeekHeadColor+";width:"+CellWidth+"px;color:#FFFFFF' class='calTD'>" + WeekDayName[i].substr(0, WeekChar) + "</td>";
 	}
 
 	calHeight += 19;
@@ -614,13 +610,13 @@ function RenderCssCal(bNewCal) {
 
 		vCalTime = "<tr><td colspan='7' style=\"text-align:center;\"><table border='0' width='199px' cellpadding='0' cellspacing='0'><tbody><tr><td height='5px' width='" + HourCellWidth + "'>&nbsp;</td>";
 
-		vCalTime += "<td width='22px'><input type='text' name='hour' maxlength=2 size=1 style=\"WIDTH:22px\" value=" + showHour + " onkeyup=\"javascript:Cal.SetHour(this.value)\">";
-		vCalTime += "</td><td style='font-weight:bold;text-align:center;'>:</td><td width='22px'>";
-		vCalTime += "<input type='text' name='minute' maxlength=2 size=1 style=\"WIDTH: 22px\" value=" + Cal.Minutes + " onkeyup=\"javascript:Cal.SetMinute(this.value)\">";
+		vCalTime += "<td><input type='text' name='hour' maxlength=2 size=1 value=" + showHour + " onkeyup=\"javascript:Cal.SetHour(this.value)\">";
+		vCalTime += "</td><td style='font-weight:bold;text-align:center;'>:</td><td>";
+		vCalTime += "<input type='text' name='minute' maxlength=2 size=1 value=" + Cal.Minutes + " onkeyup=\"javascript:Cal.SetMinute(this.value)\">";
 
 		if (Cal.ShowSeconds) {
-		    vCalTime += "</td><td style='font-weight:bold;'>:</td><td width='22px'>";
-			vCalTime += "<input type='text' name='second' maxlength=2 size=1 style=\"WIDTH: 22px\" value=" + Cal.Seconds + " onkeyup=\"javascript:Cal.SetSecond(parseInt(this.value,10))\">";
+            vCalTime += "</td><td style='font-weight:bold;'>:</td><td>";
+			vCalTime += "<input type='text' name='second' maxlength=2 size=1 value=" + Cal.Seconds + " onkeyup=\"javascript:Cal.SetSecond(parseInt(this.value,10))\">";
 		}
 
 		if (TimeMode === 12) {
@@ -645,7 +641,7 @@ function RenderCssCal(bNewCal) {
 	}
 	vCalClosing += "</tbody></table></td></tr>";
 	calHeight += 31;
-	vCalClosing += "</tbody></table>\n</span>";
+	vCalClosing += "</tbody></table>";
 
 	//end time picker
 	funcCalback = "function callback(id, datum) {";
@@ -683,17 +679,14 @@ function RenderCssCal(bNewCal) {
 		style.appendChild(cssText);
 
 		headID.appendChild(style);
-		// create the outer frame that allows the cal. to be moved
+
+        // create the outer frame
 		span = document.createElement("span");
 		span.id = calSpanID;
 		span.style.position = "absolute";
 		span.style.left = (xpos + CalPosOffsetX) + 'px';
 		span.style.top = (ypos - CalPosOffsetY) + 'px';
 		span.style.width = CalWidth + 'px';
-		span.style.border = "solid 1pt " + SpanBorderColor;
-		span.style.padding = "0";
-		span.style.cursor = "move";
-		span.style.backgroundColor = SpanBgColor;
 		span.style.zIndex = 100;
 		document.body.appendChild(span);
 		winCal = document.getElementById(calSpanID);
@@ -702,8 +695,7 @@ function RenderCssCal(bNewCal) {
 		winCal.style.Height = calHeight;
 
 		// set the position for a new calendar only
-		if (bNewCal === true)
-		{
+		if (bNewCal === true) {
 			winCal.style.left = (xpos + CalPosOffsetX) + 'px';
 			winCal.style.top = (ypos - CalPosOffsetY) + 'px';
 		}
