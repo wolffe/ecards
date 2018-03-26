@@ -61,6 +61,10 @@ if ($ecard_shortcode_fix === 'on') {
 if ($ecard_html_fix === 'on') {
     add_filter('wp_mail_content_type', 'ecards_set_content_type');
 }
+
+if ((int) get_option('ecard_set_log') === 1) {
+	add_filter('wp_mail', 'ecards_mail_log', 10, 1);
+}
 //
 
 function eCardsInstall() {
@@ -132,6 +136,8 @@ function eCardsInstall() {
     add_option('p2v_cbt', '');
 
     add_option('ecard_use_display', 'masonry');
+
+    add_option('ecard_set_log', 0);
 
     //
     add_role('ecards_sender', esc_html__('eCards Sender', 'ecards'), array('read' =>  false, 'edit_posts' => false, 'delete_posts' => false));
@@ -404,6 +410,7 @@ function display_ecardMe() {
         $subject = str_replace('[email]', $ecard_email_from, $subject);
 
         $headers[] = "Content-Type: text/html;";
+        $headers[] = "X-Mailer: WordPress/eCards;";
 
 		// Akismet
 		$content['comment_author'] = $ecard_from;

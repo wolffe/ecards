@@ -1,28 +1,29 @@
 <?php
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-// Register Custom Post Type
+// Register Custom Post Types
 function ecard_cpt() {
+	// eCard post type
     $labels = array(
-		'name'                => _x( 'eCards', 'Post Type General Name', 'ecards' ),
-		'singular_name'       => _x( 'eCard', 'Post Type Singular Name', 'ecards' ),
-		'menu_name'           => esc_html__( 'eCards', 'ecards' ),
-		'name_admin_bar'      => esc_html__( 'eCard', 'ecards' ),
-		'parent_item_colon'   => esc_html__( 'Parent eCard:', 'ecards' ),
-		'all_items'           => esc_html__( 'All eCards', 'ecards' ),
-		'add_new_item'        => esc_html__( 'Add New eCard', 'ecards' ),
-		'add_new'             => esc_html__( 'Add New', 'ecards' ),
-		'new_item'            => esc_html__( 'New eCard', 'ecards' ),
-		'edit_item'           => esc_html__( 'Edit eCard', 'ecards' ),
-		'update_item'         => esc_html__( 'Update eCard', 'ecards' ),
-		'view_item'           => esc_html__( 'View eCard', 'ecards' ),
-		'search_items'        => esc_html__( 'Search eCard', 'ecards' ),
-		'not_found'           => esc_html__( 'Not found', 'ecards' ),
-		'not_found_in_trash'  => esc_html__( 'Not found in trash', 'ecards' ),
+		'name'                => _x('eCards', 'Post Type General Name', 'ecards'),
+		'singular_name'       => _x('eCard', 'Post Type Singular Name', 'ecards'),
+		'menu_name'           => esc_html__('eCards', 'ecards'),
+		'name_admin_bar'      => esc_html__('eCard', 'ecards'),
+		'parent_item_colon'   => esc_html__('Parent eCard:', 'ecards'),
+		'all_items'           => esc_html__('All eCards', 'ecards'),
+		'add_new_item'        => esc_html__('Add New eCard', 'ecards'),
+		'add_new'             => esc_html__('Add New', 'ecards'),
+		'new_item'            => esc_html__('New eCard', 'ecards'),
+		'edit_item'           => esc_html__('Edit eCard', 'ecards'),
+		'update_item'         => esc_html__('Update eCard', 'ecards'),
+		'view_item'           => esc_html__('View eCard', 'ecards'),
+		'search_items'        => esc_html__('Search eCard', 'ecards'),
+		'not_found'           => esc_html__('Not found', 'ecards'),
+		'not_found_in_trash'  => esc_html__('Not found in trash', 'ecards'),
 	);
 	$args = array(
-		'label'               => esc_html__( 'eCard', 'ecards' ),
-		'description'         => esc_html__( 'eCard', 'ecards' ),
+		'label'               => esc_html__('eCard', 'ecards'),
+		'description'         => esc_html__('eCard', 'ecards'),
 		'labels'              => $labels,
 		'supports'            => array('title', 'editor', 'author', 'thumbnail', 'custom-fields'),
 		'hierarchical'        => false,
@@ -44,10 +45,54 @@ function ecard_cpt() {
 		),
 		'map_meta_cap' => true, // Set to `false`, if users are not allowed to edit/delete existing posts
 	);
-	register_post_type( 'ecard', $args );
+	register_post_type('ecard', $args);
 
+	// eCard Mail Log post type
+    $labels = array(
+		'name'                => _x('eCard Logs', 'Post Type General Name', 'ecards'),
+		'singular_name'       => _x('eCard Log', 'Post Type Singular Name', 'ecards'),
+		'menu_name'           => esc_html__('eCard Logs', 'ecards'),
+		'name_admin_bar'      => esc_html__('eCard Log', 'ecards'),
+		'parent_item_colon'   => esc_html__('Parent eCard Log:', 'ecards'),
+		'all_items'           => esc_html__('All eCard Logs', 'ecards'),
+		'add_new_item'        => esc_html__('Add New eCard Log', 'ecards'),
+		'add_new'             => esc_html__('Add New', 'ecards'),
+		'new_item'            => esc_html__('New eCard Log', 'ecards'),
+		'edit_item'           => esc_html__('Edit eCard Log', 'ecards'),
+		'update_item'         => esc_html__('Update eCard Log', 'ecards'),
+		'view_item'           => esc_html__('View eCard Log', 'ecards'),
+		'search_items'        => esc_html__('Search eCard Log', 'ecards'),
+		'not_found'           => esc_html__('Not found', 'ecards'),
+		'not_found_in_trash'  => esc_html__('Not found in trash', 'ecards'),
+	);
+	$args = array(
+		'label'               => esc_html__('eCard Log', 'ecards'),
+		'description'         => esc_html__('eCard Log', 'ecards'),
+		'labels'              => $labels,
+		'supports'            => array('title', 'editor'),
+		'hierarchical'        => false,
+		'public'              => false,
+		'show_ui'             => true,
+		'show_in_menu'        => true,
+		'menu_position'       => 5,
+		'menu_icon'           => 'dashicons-email-alt',
+		'show_in_admin_bar'   => false,
+		'show_in_nav_menus'   => false,
+		'can_export'          => false,
+		'has_archive'         => false,		
+		'exclude_from_search' => true,
+		'publicly_queryable'  => false,
+		'rewrite'             => false,
+		'capability_type'     => 'post',
+		'capabilities' => array(
+			'create_posts' => 'do_not_allow', // Removes support for the "Add New" function
+		),
+		'map_meta_cap' => true, // Set to `false`, if users are not allowed to edit/delete existing posts
+	);
+	register_post_type('ecard_log', $args);
 }
-add_action( 'init', 'ecard_cpt', 0 );
+
+add_action('init', 'ecard_cpt', 0);
 
 
 
@@ -239,10 +284,27 @@ function ecards_mail_log($args) {
 	$subject = $args['subject'];
 	$message = $args['message'];
 	$headers = $args['headers'];
-	$attachments = $args['attachments'];
 
-	mail('getbutterfly@gmail.com', 'This is a log', 'This is the body + ' . $to . $subject);
+	$ecard_mail_log_template = '<p>New email sent to <strong>' . $to . '</strong>.</p>
+	<h3>' . $subject . '</h3>
+	' . $message . '
+	<p>Date: <code>' . date('Y/m/d H:i:s') . '</code></p>';
+
+    foreach ($headers as $header) {
+        if (strpos($header, 'eCards') !== false) {
+            // record log
+
+			$ecard_mail_log = array(
+				'post_title' => esc_html__('eCard (Mail Log)', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
+				'post_content' => $ecard_mail_log_template,
+				'post_status' => 'private',
+				'post_type' => 'ecard_log',
+				'post_author' => 1,
+				'post_date' => date('Y/m/d H:i:s'),
+			);
+			$ecard_mail_log_id = wp_insert_post($ecard_mail_log);
+		}
+	}
 
 	return $args;
 }
-add_filter('wp_mail', 'ecards_mail_log', 10, 1);

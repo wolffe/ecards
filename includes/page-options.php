@@ -56,6 +56,7 @@ function ecard_options_page() {
         update_option('ecard_send_later', sanitize_text_field($_POST['ecard_send_later']));
 
         update_option('ecard_allow_cc', sanitize_text_field($_POST["ecard_allow_cc"]));
+        update_option('ecard_set_log', (int) $_POST['ecard_set_log']);
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     } else if (isset($_POST['info_labels_update'])) {
@@ -511,6 +512,16 @@ function ecard_options_page() {
 									<option value="off"<?php if(get_option('ecard_allow_cc') === 'off') echo ' selected'; ?>>Do not allow sender to CC self</option>
 								</select>
 								<br><small>Display a checkbox to allow the sender to CC self</small>
+				            </td>
+				        </tr>
+    		            <tr>
+    		                <th scope="row"><label for="ecard_set_log">Carbon copy (CC)</label></th>
+    		                <td>
+                                <select name="ecard_set_log" id="ecard_set_log" class="regular-text">
+									<option value="1"<?php if ((int) get_option('ecard_set_log') === 1) echo ' selected'; ?>>Enable email log</option>
+									<option value="0"<?php if ((int) get_option('ecard_set_log') === 0) echo ' selected'; ?>>Disable email log</option>
+								</select>
+								<br><small>Save all sent emails in a log post type</small>
 				            </td>
 				        </tr>
 				    </tbody>
