@@ -29,14 +29,12 @@ var winCal,
     WeekDayColor = '#EEEEEE',
     TodayColor = "#ffbd35",
     SelDateColor = "#8DD53C",
-    HoverColor = "#E0FF38",
     DisableColor = "#999966",
     CalBgColor = "#ffffff",
 
     WeekChar = 2, // Number of characters for week day. If 2 then Mo, Tu, We. If 3 then Mon, Tue, Wed.
     DateSeparator = '-',
     ShowLongMonth = true,
-    ShowMonthYear = true,
     PrecedeZero = true,
     MondayFirstDay = true;
 
@@ -415,7 +413,6 @@ function RenderCssCal(bNewCal) {
 	i,
 	j,
 
-	SelectStr,
 	vDayCount = 0,
 	vFirstDay,
 
@@ -707,7 +704,6 @@ function NewCssCal(pCtrl, pFormat, pShowTime, pTimeMode, pShowSeconds, pEnableDa
 		strHour,
 		strMinute,
 		strSecond,
-		winHeight,
 		offset = parseInt(Cal.Format.toUpperCase().lastIndexOf("M"), 10) - parseInt(Cal.Format.toUpperCase().indexOf("M"), 10) - 1,
 		strAMPM = "";
 		//parse month

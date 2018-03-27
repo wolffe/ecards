@@ -5,7 +5,7 @@ License: GPLv3
 Requires at least: 4.7
 Tested up to: 4.9.4
 Requires PHP: 5.6
-Stable tag: 4.5.2
+Stable tag: 4.5.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -25,6 +25,9 @@ There are two ways you can use this plugin:
 4. A new eCards menu will appear in WordPress with options, and general help
 
 == Changelog ==
+
+= 4.5.3 =
+* FIX: Fix for wp_mail() filter
 
 = 4.5.2 =
 * UPDATE: Replaced date/time picker with vanilla JavaScript (+speed, -weight)

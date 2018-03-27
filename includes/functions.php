@@ -275,36 +275,3 @@ function ecards_mail_from($mail_from_email) {
 }
 
 add_filter('wp_mail_from', 'ecards_mail_from', 1);
-
-/**
- * Save email to eCards mail log
- */
-function ecards_mail_log($args) {
-	$to = $args['to'];
-	$subject = $args['subject'];
-	$message = $args['message'];
-	$headers = $args['headers'];
-
-	$ecard_mail_log_template = '<p>New email sent to <strong>' . $to . '</strong>.</p>
-	<h3>' . $subject . '</h3>
-	' . $message . '
-	<p>Date: <code>' . date('Y/m/d H:i:s') . '</code></p>';
-
-    foreach ($headers as $header) {
-        if (strpos($header, 'eCards') !== false) {
-            // record log
-
-			$ecard_mail_log = array(
-				'post_title' => esc_html__('eCard (Mail Log)', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
-				'post_content' => $ecard_mail_log_template,
-				'post_status' => 'private',
-				'post_type' => 'ecard_log',
-				'post_author' => 1,
-				'post_date' => date('Y/m/d H:i:s'),
-			);
-			$ecard_mail_log_id = wp_insert_post($ecard_mail_log);
-		}
-	}
-
-	return $args;
-}
