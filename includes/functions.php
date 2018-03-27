@@ -188,14 +188,34 @@ function ecard_send_later($ecard_id) {
     $ecard_noreply = get_option('ecard_noreply');
 
     $headers[] = "Content-Type: text/html;";
-    $headers[] = "From: $ecard_from <$ecard_noreply>";
-    $headers[] = "Reply-To: $ecard_email_from";
+    $headers[] = "X-Mailer: WordPress/eCards;";
 
     wp_mail($ecard_to, $subject, $ecard_email_message, $headers);
 
     $ecard_email_cc = get_post_meta($ecard_id, 'ecard_email_cc', true);
-    if (!empty($ecard_email_cc))
+    if (!empty($ecard_email_cc)) {
         wp_mail($ecard_email_from, $subject, $ecard_email_message, $headers);
+    }
+
+    /**
+     * Save email to eCards mail log
+     */
+    if ((int) get_option('ecard_set_log') === 1) {
+        $ecard_mail_log_template = '<p>New email sent to <strong>' . $ecard_to . '</strong>.</p>
+       	<h3>' . $subject . '</h3>
+       	' . $ecard_email_message . '
+       	<p>Date: <code>' . date('Y/m/d H:i:s') . '</code></p>';
+
+		$ecard_mail_log = array(
+			'post_title' => esc_html__('eCard (Mail Log)', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
+			'post_content' => $ecard_mail_log_template,
+			'post_status' => 'private',
+			'post_type' => 'ecard_log',
+			'post_author' => 1,
+			'post_date' => date('Y/m/d H:i:s'),
+		);
+		$ecard_mail_log_id = wp_insert_post($ecard_mail_log);
+    }
 
     ecards_conversion(get_the_ID());
 }

@@ -515,7 +515,7 @@ function ecard_options_page() {
 				            </td>
 				        </tr>
     		            <tr>
-    		                <th scope="row"><label for="ecard_set_log">Carbon copy (CC)</label></th>
+    		                <th scope="row"><label for="ecard_set_log">Email logging</label></th>
     		                <td>
                                 <select name="ecard_set_log" id="ecard_set_log" class="regular-text">
 									<option value="1"<?php if ((int) get_option('ecard_set_log') === 1) echo ' selected'; ?>>Enable email log</option>
