@@ -19,8 +19,6 @@ function ecard_options_page() {
         update_option('ecard_html_fix', sanitize_text_field($_POST['ecard_html_fix']));
 
         update_option('ecard_use_akismet', sanitize_text_field($_POST['ecard_use_akismet']));
-        update_option('ecard_post_create_status', sanitize_text_field($_POST['ecard_post_create_status']));
-        update_option('ecard_user_create', sanitize_text_field($_POST['ecard_user_create']));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     } else if (isset($_POST['info_payment_update'])) {
@@ -56,7 +54,6 @@ function ecard_options_page() {
         update_option('ecard_send_later', sanitize_text_field($_POST['ecard_send_later']));
 
         update_option('ecard_allow_cc', sanitize_text_field($_POST["ecard_allow_cc"]));
-        update_option('ecard_set_log', (int) $_POST['ecard_set_log']);
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     } else if (isset($_POST['info_labels_update'])) {
@@ -237,19 +234,6 @@ function ecard_options_page() {
                                 <br><small><b>Note that adding custom sizes may require thumbnail regeneration.</b> We recommend the <a href="https://wordpress.org/plugins/force-regenerate-thumbnails/">Force Regenerate Thumbnails</a> plugin (free).</small>
     		                </td>
     		            </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_user_create">User creation settings</label></th>
-    		                <td>
-								<select name="ecard_user_create">
-									<option value="0"<?php if(get_option('ecard_user_create') === '0') echo ' selected'; ?>>Do not create user on eCard sending</option>
-									<option value="1"<?php if(get_option('ecard_user_create') === '1') echo ' selected'; ?>>Create user on eCard sending</option>
-								</select>
-                                <br><small>
-                                    If active, this option will create a new user with the "eCards Sender" role. This role is restricted and may be used to store users.<br>
-                                    Please disclose terms of service if you activate this option.
-                                </small>
-    		                </td>
-    		            </tr>
                         <tr><td colspan="2"><hr></td></tr>
     		            <tr>
     		                <th scope="row"><label>Debugging<br><small>(developers only)</small></label></th>
@@ -262,16 +246,6 @@ function ecard_options_page() {
                                     <input name="ecard_html_fix" id="ecard_html_fix" type="checkbox"<?php if(get_option('ecard_html_fix') === 'on') echo ' checked'; ?>> <label for="ecard_html_fix">Apply HTML content type fix</label>
                                     <br><small>Only use this option if your emails are missing formatting and line breaks.</small>
                                 </p>
-    		                </td>
-    		            </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_post_create_status">eCard status settings<br><small>(developers only)</small></label></th>
-    		                <td>
-								<select name="ecard_post_create_status">
-									<option value="private"<?php if(get_option('ecard_post_create_status') === 'private') echo ' selected'; ?>>Hide eCards from search engines and sitemap plugins (mark as private)</option>
-									<option value="publish"<?php if(get_option('ecard_post_create_status') === 'publish') echo ' selected'; ?>>Show eCards to search engines and sitemap plugins (mark as published)</option>
-								</select>
-                                <br><small>eCards are saved as custom post types. Use the options above to make them available to custom loops, sitemap plugins and search engines or hide them by marking them as private posts.</small>
     		                </td>
     		            </tr>
     		        </tbody>
@@ -512,16 +486,6 @@ function ecard_options_page() {
 									<option value="off"<?php if(get_option('ecard_allow_cc') === 'off') echo ' selected'; ?>>Do not allow sender to CC self</option>
 								</select>
 								<br><small>Display a checkbox to allow the sender to CC self</small>
-				            </td>
-				        </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_set_log">Email logging</label></th>
-    		                <td>
-                                <select name="ecard_set_log" id="ecard_set_log" class="regular-text">
-									<option value="1"<?php if ((int) get_option('ecard_set_log') === 1) echo ' selected'; ?>>Enable email log</option>
-									<option value="0"<?php if ((int) get_option('ecard_set_log') === 0) echo ' selected'; ?>>Disable email log</option>
-								</select>
-								<br><small>Save all sent emails in a log post type</small>
 				            </td>
 				        </tr>
 				    </tbody>

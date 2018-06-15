@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com/
-Version: 4.5.4
+Version: 4.6.0
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
@@ -119,8 +119,6 @@ function eCardsInstall() {
 
     //
     add_option('ecard_use_akismet', 'false');
-    add_option('ecard_user_create', 0);
-    add_option('ecard_post_create_status', 'publish');
 
     // https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/
     add_option('p2v_ipn', '');
@@ -133,12 +131,17 @@ function eCardsInstall() {
 
     add_option('ecard_use_display', 'masonry');
 
-    add_option('ecard_set_log', 0);
+    // Remove old eCard roles
+    if (get_role('ecards_sender')) {
+        ecards_remove_old_senders();
 
-    //
-    add_role('ecards_sender', esc_html__('eCards Sender', 'ecards'), array('read' =>  false, 'edit_posts' => false, 'delete_posts' => false));
+        remove_role('ecards_sender');
+    }
 
-    //
+    // Delete old eCard logs
+    ecards_delete_old_logs();
+
+    // Delete old options
     delete_option('ecard_include_content');
     delete_option('ecard_body_additional');
     delete_option('ecard_behaviour');
@@ -147,11 +150,31 @@ function eCardsInstall() {
     delete_option('ecard_custom_style');
     delete_option('ecard_show_menu_ui');
     delete_option('ecard_counter');
+    delete_option('ecard_post_create_status');
+    delete_option('ecard_user_create');
+    delete_option('ecard_set_log');
 }
 
 register_activation_hook(__FILE__, 'eCardsInstall');
 
+function ecards_remove_old_senders() {
+    global $wpdb;
+    $args = array('role' => 'ecards_sender');
+    $senders = get_users($args);
+    if (!empty($senders)) {
+        require_once ABSPATH . 'wp-admin/includes/user.php';
+        foreach ($senders as $sender) {
+            if (wp_delete_user($sender->ID)) {
+        }
+    }
+}
+function ecards_delete_old_logs() {
+    $logs = get_pages(array('post_type' => 'ecard_log'));
 
+    foreach ($logs as $log) {
+        wp_delete_post($log->ID, true);
+    } 
+}
 
 function ecards_load_admin_style() {
     wp_enqueue_style('ecards', plugins_url('css/admin.css', __FILE__), false, eCardsGetVersion());
@@ -417,20 +440,6 @@ function display_ecardMe() {
 		if (ecard_checkSpam($content)) {
 			echo '<p><strong>' . esc_html__('Akismet prevented sending of this eCard and marked it as spam!', 'ecards') . '</strong></p>';
 		} else {
-            // Add new user with "eCards Sender" role
-            if ((int) get_option('ecard_user_create') === 1) {
-                $user_id = username_exists($ecard_email_from);
-                if (!$user_id and email_exists($ecard_email_from) == false) {
-                    $random_password = wp_generate_password($length = 12, $include_standard_special_chars = false);
-                    $user_id = wp_create_user($ecard_email_from, $random_password, $ecard_email_from);
-
-                    $user = new WP_User($user_id);
-                    $user->set_role('ecards_sender');
-                } else {
-                    $random_password = esc_html__('User already exists. Password inherited.', 'ecards');
-                }
-            }
-
             /**
              * Create eCard object (custom post type)
              */
@@ -447,11 +456,10 @@ function display_ecardMe() {
                     'post_date'     => $ecard_send_time,
                 );
             } else {
-                $ecard_post_create_status = get_option('ecard_post_create_status');
                 $ecard_post = array(
                     'post_title'    => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
                     'post_content'  => $ecard_template,
-                    'post_status'   => $ecard_post_create_status,
+                    'post_status'   => 'private',
                     'post_type'     => 'ecard',
                     'post_author'   => 1,
                 );
@@ -488,26 +496,6 @@ function display_ecardMe() {
 
                 if (isset($_POST['ecard_allow_cc'])) {
                     wp_mail($ecard_email_from, $subject, $ecard_template, $headers);
-                }
-
-                /**
-                 * Save email to eCards mail log
-                 */
-                if ((int) get_option('ecard_set_log') === 1) {
-                    $ecard_mail_log_template = '<p>New email sent to <strong>' . $ecard_to . '</strong>.</p>
-                	<h3>' . $subject . '</h3>
-                	' . $ecard_template . '
-                	<p>Date: <code>' . date('Y/m/d H:i:s') . '</code></p>';
-
-        			$ecard_mail_log = array(
-        				'post_title' => esc_html__('eCard (Mail Log)', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
-        				'post_content' => $ecard_mail_log_template,
-        				'post_status' => 'private',
-        				'post_type' => 'ecard_log',
-        				'post_author' => 1,
-        				'post_date' => date('Y/m/d H:i:s'),
-        			);
-        			$ecard_mail_log_id = wp_insert_post($ecard_mail_log);
                 }
             }
 
