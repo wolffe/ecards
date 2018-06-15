@@ -159,15 +159,21 @@ register_activation_hook(__FILE__, 'eCardsInstall');
 
 function ecards_remove_old_senders() {
     global $wpdb;
+
     $args = array('role' => 'ecards_sender');
     $senders = get_users($args);
+
     if (!empty($senders)) {
         require_once ABSPATH . 'wp-admin/includes/user.php';
+
         foreach ($senders as $sender) {
             if (wp_delete_user($sender->ID)) {
+                // Success
+            }
         }
     }
 }
+
 function ecards_delete_old_logs() {
     $logs = get_pages(array('post_type' => 'ecard_log'));
 
