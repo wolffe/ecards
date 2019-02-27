@@ -43,6 +43,14 @@ add_action('after_setup_theme', 'ecards_setup');
 include plugin_dir_path(__FILE__) . '/includes/functions.php';
 include plugin_dir_path(__FILE__) . '/includes/page-options.php';
 
+/*
+ * Attach additional images to any post or page straight from Media Library
+ */
+require_once plugin_dir_path(__FILE__) . '/classes/eCards_Additional_Images.php';
+
+eCards_Additional_Images::getInstance()->init();
+//
+
 // Debugging and fixes
 $ecard_shortcode_fix = (string) get_option('ecard_shortcode_fix');
 $ecard_html_fix = (string) get_option('ecard_html_fix');
@@ -121,6 +129,8 @@ function eCardsInstall() {
     add_option('p2v_shipping', 1);
     add_option('p2v_cbt', '');
 
+    add_option('ecard_use_display', 'masonry');
+
     // Remove old eCard roles
     if (get_role('ecards_sender')) {
         ecards_remove_old_senders();
@@ -143,7 +153,6 @@ function eCardsInstall() {
     delete_option('ecard_post_create_status');
     delete_option('ecard_user_create');
     delete_option('ecard_set_log');
-    delete_option('ecard_use_display');
 }
 
 register_activation_hook(__FILE__, 'eCardsInstall');
@@ -182,10 +191,10 @@ add_action('admin_enqueue_scripts', 'ecards_load_admin_style');
 function ecards_load_additional() {
     global $pagenow;
 
-    if (is_admin() && (strpos($pagenow, 'post') !== false || strpos($pagenow, 'page') !== false)) {
+    if (is_admin() && strpos($pagenow, 'post') !== false) {
         wp_enqueue_media();
 
-        wp_register_script('twp-attach-post-pages-js', plugins_url('/js/attach-ecards.js', __FILE__), array('jquery'));
+        wp_register_script('twp-attach-post-pages-js', plugins_url('application.js', __FILE__), array('jquery'));
         wp_enqueue_script('twp-attach-post-pages-js');
 
         wp_localize_script('twp-attach-post-pages-js', 'ajax_object', array(
@@ -194,48 +203,6 @@ function ecards_load_additional() {
     }
 }
 add_action('admin_enqueue_scripts', 'ecards_load_additional');
-
-
-
-function ecard_get_admin_attachments($id) {
-    /*
-     * Get all post attachments and exclude featured image
-     */
-    $output = '';
-
-    $args = array(
-        'post_type' => 'attachment',
-        'numberposts' => -1,
-        'post_status' => null,
-        'post_parent' => $id,
-        'post_mime_type' => 'image',
-        'orderby' => 'menu_order',
-        'order' => 'ASC',
-        'exclude' => get_post_thumbnail_id($id),
-    );
-    $attachments = get_posts($args);
-
-    if ($attachments) {
-        $output .= '<div id="twp-attach-post-images-list-container">
-            <ul id="twp-attach-post-images-list">';
-            foreach ($attachments as $a) {
-                $alt = get_post_meta($a->ID, '_wp_attachment_image_alt', true);
-                if ($alt != 'noselect') {
-                    $output .= '<li>';
-                        $large = wp_get_attachment_image_src($a->ID, 'large');
-                        $thumb = wp_get_attachment_image_src($a->ID, 'thumbnail');
-                        $output .= '<img src="' . $thumb[0] . '" alt="">
-                        <a href="javascript:void(0)" class="delete" data-id="' . (int) $a->ID . '"><span class="dashicons dashicons-trash"></span></a>';
-                    $output .= '</li>';
-                }
-            }
-        $output .= '</ul>
-        </div>
-        <div style="clear:both;"></div>';
-    }
-
-    return $output;
-}
 
 
 
@@ -261,8 +228,21 @@ function ecard_get_attachments($ecid) {
     $ecard_image_size = get_option('ecard_image_size');
     $ecardSizeEmail = get_option('ecard_image_size_email');
 
+    $ecard_use_display = (string) get_option('ecard_use_display'); // Carousel or Masonry Grid
+
+    $ecard_group_role = 'none';
+    if ($ecard_use_display === 'carousel') {
+        $ecard_group_role = 'ecard-carousel';
+    } else if ($ecard_use_display === 'masonry') {
+        $ecard_group_role = 'ecard-masonry';
+    }
+
     if ($attachments) {
-        $output .= '<div role="radiogroup" class="ecard-inner-container">';
+        if ($ecard_use_display === 'carousel') {
+            $output .= '<div class="ecard_arrows"></div>';
+        }
+
+        $output .= '<div role="radiogroup" class="ecard-inner-container ' . $ecard_group_role . '">';
             foreach ($attachments as $a) {
                 $alt = get_post_meta($a->ID, '_wp_attachment_image_alt', true);
                 if ($alt != 'noselect') {
@@ -470,25 +450,24 @@ function display_ecardMe() {
              * Create eCard object (custom post type)
              */
             if (isset($_POST['ecard_send_time_enable']) && $_POST['ecard_send_time_enable'] == 1) {
-                $ecardBuiltDate = $_POST['ecard_send_time_year'] . '-' . $_POST['ecard_send_time_month'] . '-' . $_POST['ecard_send_time_day'] . ' ' . $_POST['ecard_send_time_hour'] . ':00';
-                $ecardSendTime = strtotime($ecardBuiltDate);
-                $ecardSendTime = date('Y-m-d H:i:s', $ecardSendTime);
+                $ecard_send_time = strtotime($_POST['ecard_send_time']);
+                $ecard_send_time = date('Y-m-d H:i:s', $ecard_send_time);
 
                 $ecard_post = array(
-                    'post_title' => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
-                    'post_content' => $ecard_template,
-                    'post_status' => 'future',
-                    'post_type' => 'ecard',
-                    'post_author' => 1,
-                    'post_date' => $ecardSendTime
+                    'post_title'    => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
+                    'post_content'  => $ecard_template,
+                    'post_status'   => 'future',
+                    'post_type'     => 'ecard',
+                    'post_author'   => 1,
+                    'post_date'     => $ecard_send_time,
                 );
             } else {
                 $ecard_post = array(
-                    'post_title' => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
-                    'post_content' => $ecard_template,
-                    'post_status' => 'private',
-                    'post_type' => 'ecard',
-                    'post_author' => 1
+                    'post_title'    => esc_html__('eCard', 'ecards') . ' (' . date('Y/m/d H:i:s') . ')',
+                    'post_content'  => $ecard_template,
+                    'post_status'   => 'private',
+                    'post_type'     => 'ecard',
+                    'post_author'   => 1,
                 );
             }
 
@@ -586,7 +565,7 @@ function display_ecardMe() {
             $ecard_send_later = get_option('ecard_send_later');
             if ((int) $ecard_send_later === 1) {
                 $output .= '<p>
-                    <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option('ecard_label_send_time') . '</label> ' . ecard_datetime_picker() . '
+                    <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option('ecard_label_send_time') . '</label> <input type="text" name="ecard_send_time" id="ecard_send_time" value="' . date('Y/m/d H:i') . '"> <a href="#" class="ecard-icon-calendar" onclick="NewCssCal(\'ecard_send_time\', \'yyyyMMdd\', true, 24, false, \'future\'); return false;">&#128197;</a>
                 </p>';
             }
 
@@ -623,6 +602,16 @@ add_shortcode('ecard', 'display_ecardMe');
 add_action('wp_enqueue_scripts', 'ecard_enqueue_scripts');
 function ecard_enqueue_scripts() {
     wp_enqueue_style('ecards', plugins_url('css/vintage.css', __FILE__));
+
+    if ((string) get_option('ecard_use_display') === 'carousel') {
+        wp_enqueue_style('flickity', 'https://unpkg.com/flickity@2/dist/flickity.min.css');
+        wp_enqueue_script('flickity', 'https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js', array('jquery'), '2.1.0', true);
+        wp_enqueue_script('ecards-functions', plugins_url('js/jquery.functions.js', __FILE__), array('jquery', 'flickity'), '4.4.7', true);
+    }
+    if ((string) get_option('ecard_use_display') === 'masonry') {
+        wp_enqueue_style('masonry');
+        wp_enqueue_script('ecards-functions', plugins_url('js/jquery.functions.js', __FILE__), array('jquery', 'masonry'), '4.4.7', true);
+    }
 }
 
 // Displays options menu
