@@ -1,3 +1,4 @@
+.ecard-container select,
 .ecard-container input[type="text"],
 .ecard-container input[type="email"],
 .ecard-container input[type="submit"],
@@ -7,12 +8,13 @@
 	padding: 8px;
 	margin-bottom: 4px;
 }
+.ecard-container select,
 .ecard-container input[type="text"],
 .ecard-container input[type="email"],
 .ecard-container textarea {
     border: 1px solid rgba(169, 169, 169, 0.75);
-    -webkit-border-radius: 3px;
-            border-radius: 3px;
+    -webkit-border-radius: 2px;
+            border-radius: 2px;
     -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -26,49 +28,47 @@
     clear: both;
     margin: 32px 0 0 0;
 }
+
 .ecard-inner-container .ecard {
-    display: inline-block;
+    width: 32%;
+
     padding: 8px;
     margin: 2px;
     background-color: rgba(0, 0, 0, 0.05);
-    -webkit-border-radius: 3px;
-            border-radius: 3px;
+    -webkit-border-radius: 2px;
+            border-radius: 2px;
 }
 .ecard {
     position: relative;
     -webkit-box-sizing: border-box;
             box-sizing: border-box;
 }
+
 .ecard-container label {
     display: inline-block;
 }
+.ecard-container label input {
+    -webkit-transform: scale(1);
+        -ms-transform: scale(1);
+            transform: scale(1);
+    -webkit-transition: -webkit-transform 0.5s ease-in-out;
+    transition: -webkit-transform 0.5s ease-in-out;
+    -o-transition: transform 0.5s ease-in-out;
+    transition: transform 0.5s ease-in-out;
+    transition: transform 0.5s ease-in-out, -webkit-transform 0.5s ease-in-out;
+}
+.ecard-container label:hover input[type="radio"],
+.ecard-container label:hover input[type="radio"]:focus,
+.ecard-container label:hover input[type="radio"]:active,
+.ecard-container label:hover input[type="radio"]:checked {
+    -webkit-transform: scale(2);
+        -ms-transform: scale(2);
+            transform: scale(2);
+}
+
 .ecard-container #captcha {
 	vertical-align: middle;
 }
-
-.ecard-masonry .ecard {
-    width: 32%;
-}
-.ecard-masonry .ecard img {
-    max-width: 100%;
-    height: auto;
-    -webkit-box-shadow: none;
-            box-shadow: none;
-}
-.ecard-masonry .ecard a {
-    -webkit-box-shadow: none;
-            box-shadow: none;
-}
-
-.ecard-carousel .ecard {
-    width: auto;
-}
-.ecard-carousel .ecard img {
-    max-width: inherit !important;
-    width: auto;
-    height: 300px !important;
-}
-
 
 #ecard_from,
 #ecard_email_from,
@@ -92,81 +92,34 @@
 
 
 
-.slick-slide {
-    text-align: center;
-    width: 100%;
-    outline: 0 none;
+.ecard-inner-container {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-line-pack: start;
+        align-content: flex-start;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+        -ms-flex-flow: row wrap;
+            flex-flow: row wrap;
 }
-.slick-slide img {
-    width: 100%;
-    height: auto;
-    -o-object-fit: cover;
-       object-fit: cover;
-}
-
-.dotsContainer {
-    overflow: hidden;
-    text-align: center;
-}
-.dotsContainer .slick-dots {
-    overflow: hidden;
-    display: inline-block;
-    list-style: none;
-    margin: 0;
-}
-.dotsContainer .slick-dots li {
-    float: left;
-    list-style: none;
-    margin: 4px;
-    margin-top: 0;
-    text-indent: -9999px;
-    width: 15px;
-    height: 15px;
-    background-color: rgba(128, 128, 128, 0.5);
-    -webkit-border-radius: 50%;
-            border-radius: 50%;
-    line-height: 1;
-}
-.dotsContainer .slick-dots li:first-child {
-    margin-top: 0;
-}
-.dotsContainer .slick-dots li.slick-active {
-    background-color: rgba(128, 128, 128, 0.5);
+.ecard-inner-container .ecard img {
+    max-width: 100%;
 }
 
-
-
-.ecard-icon-calendar {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Symbol", "Segoe UI Emoji";
+@media all and (max-width: 720px) {
+    .ecard-inner-container .ecard {
+        width: 49%;
+    }
 }
-
-
-
-#calBorder table {
-    margin: 0;
-}
-#calBorder table td {
-    padding: 4px;
-}
-#calBorder .week-head-colour {
-    background-color: #DDDDDD;
-    font-weight: 700;
-}
-#calBorder input,
-#calBorder select {
-	font-family: inherit;
-	font-size: 12px;
-}
-
-#calBorder .calTD {
-	font-family: inherit;
-	font-size: 12px;
-	text-align: center;
-	border: 0;
-}
-#calBorder .calR {
-	font-family: inherit;
-	font-size: 12px;
-	text-align: center;
-	font-weight: 700;
+@media all and (max-width: 480px) {
+    .ecard-inner-container {
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+                flex-direction: column;
+    }
+    .ecard-inner-container .ecard {
+        width: 100%;
+    }
 }

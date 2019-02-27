@@ -1,6 +1,5 @@
 #gb-ad-ecards {
     color: #FFFFFF;
-    /* FlatUI Midnight Blue */
     background-color: #2C3E50;
     border-radius: 2px;
     -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
@@ -8,7 +7,6 @@
     margin: 16px 0;
 }
 #gb-ad-ecards a {
-    /* FlatUI Alizarin */
     color: #E74C3C;
 }
 #gb-ad-ecards h4 {
@@ -81,11 +79,7 @@
 /*
  * Attach additional images to any post or page straight from Media Library
  */
-#twp-attach-post-images-list-container {
-    max-height: 230px;
-    overflow-x: hidden;
-    overflow-y: scroll;
-}
+#twp-attach-post-images-list-container {}
 #twp-attach-post-images-list li {
     position: relative;
     width: 75px;
@@ -97,17 +91,22 @@
 #twp-attach-post-images-list li img {
     max-width: 100%;
     max-height: 100%;
+    border-radius: 2px;
 }
 #twp-attach-post-images-list li a {
     position: absolute;
     top: 4px;
     right: 4px;
     display: block;
-    color: #E74C3C;
+    color: #FFFFFF;
     text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    border-radius: 2px;
 }
 #twp-attach-post-images-list li a:hover {
-    color: #C0392B;
+    color: #FFFFFF;
+    background-color: rgba(0, 0, 0, 0.75);
 }
 
 .ecards-pager-nav {

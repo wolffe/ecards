@@ -3,9 +3,9 @@ Contributors: butterflymedia
 Tags: akismet, ecard, electronic card, flash card, greeting card, paypal, postcard
 License: GPLv3
 Requires at least: 4.7
-Tested up to: 4.9.6
-Requires PHP: 5.6
-Stable tag: 4.6.0
+Tested up to: 5.1
+Requires PHP: 7.0
+Stable tag: 4.7.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -25,6 +25,15 @@ There are two ways you can use this plugin:
 4. A new eCards menu will appear in WordPress with options, and general help
 
 == Changelog ==
+
+= 4.7.1 =
+* FIX: Fixed Flexbox CSS Masonry
+
+= 4.7.0 =
+* PERFORMANCE: Replaced Masonry JS with Flexbox CSS
+* PERFORMANCE: Removed jQuery dependency
+* USABILITY: Replaced clunky JS calendar with HTML dropdowns
+* UPDATE: Updated WordPress compatibility
 
 = 4.6.0 =
 * PRIVACY: All eCard (CPT) are no private and invisible to XML sitemaps

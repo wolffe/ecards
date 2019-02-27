@@ -68,10 +68,6 @@ function ecard_options_page() {
         update_option('ecard_link_anchor', stripslashes(sanitize_text_field($_POST['ecard_link_anchor'])));
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
-    } else if (isset($_POST['info_appearance_update'])) {
-        update_option('ecard_use_display', sanitize_text_field($_POST['ecard_use_display']));
-
-        echo '<div id="message" class="updated notice is-dismissible"><p>' . esc_html__('Options updated successfully!', 'ecards') . '</p></div>';
     } else if (isset($_POST['info_debug_update'])) {
         $headers[] = "Content-Type: text/html;";
 
@@ -103,7 +99,6 @@ function ecard_options_page() {
 		<h2 class="nav-tab-wrapper">
 			<a href="<?php echo $page_tab; ?>dashboard" class="nav-tab <?php echo $active_tab === 'ecards_dashboard' ? 'nav-tab-active' : ''; ?>"><?php _e('Dashboard', 'ecards'); ?></a>
 			<a href="<?php echo $page_tab; ?>settings" class="nav-tab <?php echo $active_tab === 'ecards_settings' ? 'nav-tab-active' : ''; ?>"><?php _e('Settings', 'ecards'); ?></a>
-			<a href="<?php echo $page_tab; ?>appearance" class="nav-tab <?php echo $active_tab === 'ecards_appearance' ? 'nav-tab-active' : ''; ?>"><?php _e('Appearance', 'ecards'); ?></a>
 			<a href="<?php echo $page_tab; ?>designer" class="nav-tab <?php echo $active_tab === 'ecards_designer' ? 'nav-tab-active' : ''; ?>"><?php _e('eCard Designer', 'ecards'); ?></a>
 			<a href="<?php echo $page_tab; ?>email" class="nav-tab <?php echo $active_tab === 'ecards_email' ? 'nav-tab-active' : ''; ?>"><?php _e('Email Options', 'ecards'); ?></a>
 			<a href="<?php echo $page_tab; ?>payment" class="nav-tab <?php echo $active_tab === 'ecards_payment' ? 'nav-tab-active' : ''; ?>"><?php _e('Restrictions &amp; Payment', 'ecards'); ?></a>
@@ -141,7 +136,7 @@ function ecard_options_page() {
                             <small>1.</small> Add the <code>[ecard]</code> shortcode to a post or a page or call the function from a template file:<br>
                             <code>&lt;?php if (function_exists('display_ecardMe')) { echo display_ecardMe(); } ?&gt;</code>
                         </p>
-                        <p><small>2.</small> Use the <code>[paypal amount=8][ecard][/paypal]</code> shortcode to hide the eCard form and require payment. Only guests and non-members see the payment button. Members always see the hidden content.</p>
+                        <p><small>2.</small> Use the <code>[paypal amount="8"][ecard][/paypal]</code> shortcode to hide the eCard form and require payment. Only guests and non-members see the payment button. Members always see the hidden content.</p>
 
                         <p><small>3.</small> Use <code>noselect</code> as ALT text for attached images you do not want included as eCards.</p>
 
@@ -568,32 +563,6 @@ function ecard_options_page() {
 
 				<hr>
 				<p><input type="submit" name="info_labels_update" class="button button-primary" value="Save Changes"></p>
-			</form>
-		<?php } else if ($active_tab === 'ecards_appearance') { ?>
-			<form method="post" action="">
-    			<h3 class="title"><?php _e('Appearance', 'ecards'); ?></h3>
-    			<p>Customize the appearance of your eCards.</p>
-    		    <table class="form-table">
-    		        <tbody>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_use_display">eCard appearance settings</label></th>
-    		                <td>
-                                <p>
-                                    <select name="ecard_use_display" id="ecard_use_display">
-                                        <option value="">Select eCard appearance...</option>
-                                        <option value="carousel" <?php if (get_option('ecard_use_display') === 'carousel') echo 'selected'; ?>>Carousel</option>
-                                        <option value="masonry" <?php if (get_option('ecard_use_display') === 'masonry') echo 'selected'; ?>>Masonry Grid</option>
-                                        <option value="none" <?php if (get_option('ecard_use_display') === 'none') echo 'selected'; ?>>None</option>
-                                    </select>
-                                    <br><small>Use "None" only if you plan to style the grid yourself.</small>
-                                </p>
-    		                </td>
-    		            </tr>
-                    </tbody>
-                </table>
-
-				<hr>
-				<p><input type="submit" name="info_appearance_update" class="button button-primary" value="Save Changes"></p>
 			</form>
 		<?php } else if ($active_tab === 'ecards_diagnostics') { ?>
 			<form method="post" action="">

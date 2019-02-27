@@ -115,7 +115,6 @@ function ecard_checkSpam($content) {
 	return $isSpam;
 }
 
-//add_action('plugins_loaded', 'ecard_send_later');
 add_action('publish_ecard', 'ecard_send_later');
 
 function ecard_send_later($ecard_id) {
@@ -152,9 +151,6 @@ function ecard_send_later($ecard_id) {
     if (!empty($ecard_email_cc)) {
         wp_mail($ecard_email_from, $subject, $ecard_email_message, $headers);
     }
-
-	delete_post_meta($ecard_id, 'ecard_email_recipient');
-	delete_post_meta($ecard_id, 'ecard_email_sender');
 
     ecards_conversion(get_the_ID());
 }
@@ -234,3 +230,178 @@ function ecards_mail_from($mail_from_email) {
 }
 
 add_filter('wp_mail_from', 'ecards_mail_from', 1);
+
+
+
+function ecard_datetime_picker() {
+    $day = date('d');
+    $month = date('m');
+    $startyear = date('Y');
+    $endyear = date('Y') + 10;
+    $months = array('', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+
+    $html = '<select name="ecard_send_time_month">';
+        for ($i = 1; $i <= 12; $i++) {
+            if ((int) $i === (int) $month) {
+                $html .= '<option selected value="' . str_pad($i, 2, '0', STR_PAD_LEFT) . '">' . $months[$i] . '</option>';
+            } else {
+                $html .= '<option value="' . str_pad($i, 2, '0', STR_PAD_LEFT) . '">' . $months[$i] . '</option>';
+            }
+        }
+    $html .= '</select> <select name="ecard_send_time_day">';
+        for ($i = 1; $i <= 31; $i++) {
+            if ((int) $i === (int) $day) {
+                $html .= '<option selected value="' . str_pad($i, 2, '0', STR_PAD_LEFT) . '">' . $i . '</option>';
+            } else {
+                $html .= '<option value="' . str_pad($i, 2, '0', STR_PAD_LEFT) .'">' . $i . '</option>';
+            }
+        }
+    $html .= '</select> <select name="ecard_send_time_year">';
+        for ($i = $startyear; $i <= $endyear; $i++) {
+            $html .= '<option value="' . $i . '">' . $i . '</option>';
+        }
+    $html .= '</select> <select name="ecard_send_time_hour">';
+        for ($hours = 0; $hours < 24; $hours++) {
+            for ($mins = 0; $mins < 60; $mins += 30) {
+                $html .= '<option>' . str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($mins, 2, '0', STR_PAD_LEFT) . '</option>';
+            }
+        }
+    $html .= '</select>';
+
+    return $html;
+}
+
+
+
+
+function getImagesFromIds($ids, $size = 'thumbnail') {
+        $images = array();
+
+        foreach ($ids as $id) {
+            $meta = wp_get_attachment_image_src($id, $size);
+
+            $info = array();
+
+            $info['id'] = $id;
+            $info['url'] = $meta[0];
+            $info['width'] = $meta[1];
+            $info['height'] = $meta[2];
+            $info['is_original'] = !$meta[3];
+
+            $images[] = (object) $info;
+        }
+
+        return $images;
+    }
+
+/**
+ * Register eCards meta box
+ */
+function ecards_add_meta_box() {
+	add_meta_box('ecards_meta_box', __('eCards', 'ecards'), 'ecards_metabox_callback', array('post', 'page'));
+	add_meta_box('ecards_details_meta_box', __('eCards Details', 'ecards'), 'ecards_details_metabox_callback', array('ecard'));
+}
+add_action('add_meta_boxes', 'ecards_add_meta_box');
+
+/**
+ * eCards meta box Callback
+ */
+function ecards_metabox_callback($post) {
+    wp_nonce_field('ecards', 'ecards_additional_images_plugin_nonce');
+
+    $images_arr = get_post_meta($post->ID, '_ecards_additional_images', true);
+    $images_str = '';
+    $images = array();
+
+    if ($images_arr) {
+        $images = getImagesFromIds($images_arr);
+        $images_str = implode('|', $images_arr);
+    }
+
+    $params = array(
+        'post_id' => $post->ID,
+        'width' => 640,
+        'height' => 557,
+        'TB_iframe' => 1,
+        'type' => 'image',
+    );
+
+    $href = admin_url('media-upload.php?' . http_build_query($params));
+    ?>
+    <p>Use this box to add images from your <strong>Media Library</strong>.</p>
+
+    <?php echo ecard_get_admin_attachments($post->ID); ?>
+
+    <p>
+        <a href="<?php echo esc_url($href); ?>" id="twp-attach-post-images-uploader" class="button button-primary">Select image(s)</a>
+    </p>
+    <p>
+        <small>Use <code class="codor">CTRL</code> key to select multiple images, attach them and update/publish your post/page. Note that attaching images may detach them from other posts or pages.</small>
+    </p>
+    <p>
+        <input type="hidden" id="twp-attach-post-images-selected" name="selected_post_image" value="<?php echo esc_html($images_str); ?>">
+    </p>
+
+    <script type="text/html" id="twp-attach-post-images-list-item-tpl">
+        <li><img src="{src}" alt=""><a href="javascript:void(0)" class="delete" data-id="{id}"><span class="dashicons dashicons-trash"></span></a></li>
+    </script>
+
+	<?php
+}
+
+/**
+ * Save eCards meta box
+ */
+function ecards_save_postdata($post_id) {
+    if (!isset($_POST['ecards_additional_images_plugin_nonce'])) {
+        return $post_id;
+    }
+
+    $nonce = $_POST['ecards_additional_images_plugin_nonce'];
+
+    if (!wp_verify_nonce($nonce, 'ecards')) {
+        return $post_id;
+    }
+
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return $post_id;
+    }
+
+    $selected_images = sanitize_text_field($_POST['selected_post_image']);
+    $image_ids = explode('|', $selected_images);
+    foreach ($image_ids as $i => $id) {
+        if ($id > 0) {
+            $my_post = array(
+                'ID' => $id,
+                'post_parent' => $post_id,
+            );
+            wp_update_post($my_post);
+        }
+    }
+
+    update_post_meta($post_id, '_ecards_additional_images', array_values($image_ids));
+}
+add_action('save_post', 'ecards_save_postdata');
+
+function ecards_details_metabox_callback($post) {
+    $ecardContent = get_post_meta($post->ID, 'ecard_content', true);
+    $ecardEmailRecipient = get_post_meta($post->ID, 'ecard_email_recipient', true);
+    $ecardEmailSender = get_post_meta($post->ID, 'ecard_email_sender', true);
+    $ecardName = get_post_meta($post->ID, 'ecard_name', true);
+    ?>
+
+    <p>
+        <input type="text" style="width: 100%;" value="<?php echo $ecardName; ?>" readonly>
+    </p>
+    <p>
+        <input type="email" style="width: 100%;" value="<?php echo $ecardEmailSender; ?>" readonly>
+    </p>
+    <p>
+        <input type="email" style="width: 100%;" value="<?php echo $ecardEmailRecipient; ?>" readonly>
+    </p>
+    <p>
+        <textarea style="width: 100%;" rows="6" readonly><?php echo $ecardContent; ?></textarea>
+    </p>
+
+	<?php
+}
