@@ -1,0 +1,53 @@
+.ecard-grid-container {
+    display: grid;
+    grid-template-columns: repeat(var(--ecard-columns, 3), 1fr);
+    grid-gap: 2em;
+}
+
+.ecard-grid-item label {
+    display: block;
+    overflow: hidden;
+    position: relative;
+
+    box-shadow: var(--ecard-shadow);
+    border-radius: var(--ecard-radius, 0);
+}
+
+.ecard-grid-item .wp-block-image {
+    margin: 0 0 0em;
+}
+
+.ecard-grid-item .wp-block-image img {
+    height: auto;
+    width: 100%;
+}
+
+@media only screen and (max-width: 768px) {
+    .ecard-grid-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media only screen and (max-width: 480px) {
+    .ecard-grid-container {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+.ecard-grid-item label input[type="radio"] {
+    accent-color: var(--ecard-color-accent, #0000ff);
+    color-scheme: var(--ecard-color-scheme, light);
+
+    filter: drop-shadow(0 0 0.25em rgba(0, 0, 0, 0.25));
+
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    margin: 0;
+    width: 16px;
+    height: 16px;
+}
+
+.ecard-use-highlight .ecard-grid-item label:has(input[type="radio"]:checked) {
+    box-shadow: 0 0 0 1px var(--ecard-color-accent, #0000ff), 0.25em 0.25em 2em rgba(0, 0, 0, 0.25);
+}
+

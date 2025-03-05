@@ -1,11 +1,11 @@
 === eCards ===
 Contributors: butterflymedia
-Tags: akismet, ecard, electronic card, flash card, greeting card, paypal, postcard
+Tags: ecard, electronic card, flash card, greeting card, postcard, akismet, dropbox
 License: GPLv3
 Requires at least: 4.9
-Tested up to: 5.1
-Requires PHP: 7.1
-Stable tag: 4.8.0
+Tested up to: 6.7.1
+Requires PHP: 7.0
+Stable tag: 5.4.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -14,17 +14,120 @@ eCards is a WordPress plugin used to send electronic cards to friends. It can be
 
 There are two ways you can use this plugin:
 
-1. Add the shortcode [ecard] to a post or a page;
-2. Call the function from a template file: <?php if (function_exists('display_ecardMe')) { echo display_ecardMe(); } ?>;
+1. Add the `[ecard]` shortcode to a post or a page;
+2. Call the function from a template file: `<?php if ( function_exists( 'wp_ecard_display_ecards' ) ) { echo wp_ecard_display_ecards(); } ?>;`
 
 == Installation ==
 
 1. Upload the wp-ecards folder to your '/wp-content/plugins/' directory
 2. Activate the plugin via the Plugins menu in WordPress
-3. Create and publish a new page/post and add this shortcode: [ecard]
+3. Create and publish a new page/post and add this shortcode: `[ecard]`
 4. A new eCards menu will appear in WordPress with options, and general help
+5. A new eCard Collections menu will appear in WordPress
 
 == Changelog ==
+
+= 5.4.4 =
+* FIX: Fix undefined variable
+* UPDATE: Update WordPress compatibility
+
+= 5.4.3 =
+* UPDATE: Update WordPress compatibility
+
+= 5.4.2 =
+* FIX: Fix the Settings link on the Plugins page
+* FEATURE: Add new Designer tag to show a direct link to the eCard
+
+= 5.4.1 =
+* FIX: Removed unused option, saving one database call
+* FIX: Removed noselect ALT option, as it was not working properly
+* UPDATE: Updated wording on the Email Designer tab
+* UPDATE: Updated wording on the Settings tab
+* UPDATE: Updated wording on the Email Options tab
+
+= 5.4.0 =
+* FEATURE: Added a better grid system
+* FEATURE: Added design options (border radius, shadow, colour scheme, accent colour, etc.)
+* FEATURE: Added a custom CSS section
+* FIX: Improve loading speed for lots of eCard images
+* UPDATE: Updated WordPress compatibility
+* UPDATE: Updated WordPress requirements
+* UPDATE: Updated "Reusable Blocks" to "Patterns" to match the WordPress 6.4+ terminology
+
+= 5.3.2 =
+* UPDATE: Removed all wp_editor() calls, as WordPress 6.3 is planning on removing them
+* UPDATE: Updated WordPress compatibility
+
+= 5.3.1 =
+* UPDATE: Added native block columns instead of custom Flex CSS styles
+* UPDATE: Removed option to exclude certain attached images by adding "noselect" as ALT text (too hacky and not SEO-friendly)
+* UPDATE: Removed CSS stylesheet to save one HTTP request
+* PERFORMANCE: Inlined Critical CSS for overall performance
+
+= 5.3.0 =
+* FIX: Fixed collections (gallery block parsing) for WordPress 5.9+
+* UPDATE: Updated WordPress compatibility
+* UPDATE: Updated WordPress requirements
+* UPDATE: Updated copyright year
+* UPDATE: Moved the **Reusable Block** option to the **Designer** tab
+* UPDATE: Updated all code to adhere to WordPress Coding Standards
+* PERFORMANCE: Removed the obsolete statistics (impressions and conversions)
+* PERFORMANCE: Minified and inlined critical JavaScript
+
+= 5.2.2 =
+* FIX: Fixed wrong label option value
+* UPDATE: Updated PHP compatibility
+
+= 5.2.1 =
+* UPDATE: Updated WordPress compatibility
+* FEATURE: Implemented GDPR/privacy policy consent box
+
+= 5.2.0 =
+* FIX: Fixed block parsing undefined variables/indexes
+* FIX: Fixed function naming according to WordPress Coding Standards
+* FIX: Fixed select field height
+* FEATURE: Implemented columns
+* FEATURE: Changed eCard image to a block editor figure/image block
+
+= 5.1.2 =
+* FEATURE: Added eCard "Reply-To" header for author/sender reply
+
+= 5.1.1 =
+* UPDATE: Updated WordPress compatibility
+* UPDATE: Updated WordPress requirements
+
+= 5.1 =
+* FEATURE: Added eCard collections (gallery blocks)
+* UPDATE: Updated eCard custom post type with the latest block editor labels
+* UPDATE: Removed all old 4.x options
+* UPDATE: Removed admin.css (improve back-end performance and reduce dependencies)
+* UPDATE: Removed img/* (improve back-end performance, reduce dependencies and reduce overall plugin size)
+* UI: Fixed/improved Flex columns
+* FIX: Fixed eCard order when using IDs or collections
+
+= 5.0.2 =
+* FEATURE: Added ID parameter to allow custom images from Media Library
+
+= 5.0.1 =
+* UPDATE: Updated WordPress compatibility
+* UPDATE: Remove attach-in-post feature (DRY, do not repeat functionality, use the native WordPress one)
+* MAINTENANCE: Removed unused JS files for faster back-end loading
+* MAINTENANCE: Remove all `_ecards_additional_images` meta keys from all posts and pages
+* MAINTENANCE: Remove old README and LICENSE files
+
+= 5.0 =
+* FEATURE: Added a reusable block for the eCard email template
+* UPDATE: Updated PHP requirements (7+)
+* UPDATE: Updated WordPress compatibility
+* UPDATE: (BREAKING) Removed PayPal functionality
+* UPDATE: Updated plugin suggestions
+* FIX: Removed unused JS file
+* FIX: Added clean up routine (note that starting with 5.1, all old 4.x options will be removed)
+* FIX: Fixed support/documentation links
+* FIX: Fixed Dropbox button colour
+
+= 4.8.1 =
+* FIX: Fix incorrect function
 
 = 4.8.0 =
 * UPDATE: Added full Gutenberg compatibility
