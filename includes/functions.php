@@ -41,14 +41,23 @@ function ecard_check_spam( $content ) {
 
         if ( ! empty( $wpcom_api_key ) ) {
             // Set remaining required values for the Akismet API
-            $content['user_ip']    = preg_replace( '/[^0-9., ]/', '', $_SERVER['REMOTE_ADDR'] );
-            $content['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
-            $content['referrer']   = $_SERVER['HTTP_REFERER'];
-            $content['blog']       = get_option( 'home' );
+            $content['user_ip'] = isset( $_SERVER['REMOTE_ADDR'] ) ?
+                filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP ) : '';
+
+            $content['user_agent'] = isset( $_SERVER['HTTP_USER_AGENT'] ) ?
+                sanitize_text_field( $_SERVER['HTTP_USER_AGENT'] ) : '';
+
+            $content['referrer'] = isset( $_SERVER['HTTP_REFERER'] ) ?
+                esc_url_raw( $_SERVER['HTTP_REFERER'] ) : '';
+
+            $content['blog'] = get_option( 'home' );
 
             if ( empty( $content['referrer'] ) ) {
                 $content['referrer'] = get_permalink();
             }
+
+            // Sanitize all content values
+            $content = array_map( 'sanitize_text_field', $content );
 
             $query_string = '';
 
@@ -118,37 +127,41 @@ add_action( 'wp_ajax_ecards_detach', 'ecards_detach_callback' );
 add_action( 'wp_ajax_nopriv_ecards_detach', 'ecards_detach_callback' );
 
 function ecards_detach_callback() {
+    // Verify nonce
+    if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'ecards_detach_nonce' ) ) {
+        wp_send_json_error( 'Invalid nonce' );
+    }
+
+    // Verify user capabilities
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        wp_send_json_error( 'Insufficient permissions' );
+    }
+
+    // Sanitize and validate input
+    $post_id   = isset( $_POST['whatPost'] ) ? absint( $_POST['whatPost'] ) : 0;
+    $delete_id = isset( $_POST['whatToDelete'] ) ? absint( $_POST['whatToDelete'] ) : 0;
+
+    if ( ! $post_id || ! $delete_id ) {
+        wp_send_json_error( 'Invalid post IDs' );
+    }
+
     $my_post = [
-        'ID'          => $_POST['whatToDelete'],
+        'ID'          => $delete_id,
         'post_parent' => 0,
     ];
     wp_update_post( $my_post );
 
-    $selected_images   = get_post_meta( $_POST['whatPost'], '_ecards_additional_images', true );
-    $additional_images = explode( '|', $selected_images );
-
-    foreach ( array_keys( $additional_images, $_POST['whatToDelete'], true ) as $key ) {
-        unset( $additional_images[ $key ] );
+    $selected_images = get_post_meta( $post_id, '_ecards_additional_images', true );
+    if ( ! empty( $selected_images ) ) {
+        $additional_images = explode( '|', $selected_images );
+        foreach ( array_keys( $additional_images, $delete_id, true ) as $key ) {
+            unset( $additional_images[ $key ] );
+        }
+        update_post_meta( $post_id, '_ecards_additional_images', array_values( $additional_images ) );
     }
 
-    update_post_meta( $_POST['whatPost'], '_ecards_additional_images', array_values( $additional_images ) );
-
-    exit;
+    wp_send_json_success();
 }
-
-
-
-function ecards_mail_from( $mail_from_email ) {
-    $site_mail_from_email = sanitize_email( get_option( 'ecard_noreply' ) );
-
-    if ( empty( $site_mail_from_email ) ) {
-        return $mail_from_email;
-    } else {
-        return $site_mail_from_email;
-    }
-}
-
-add_filter( 'wp_mail_from', 'ecards_mail_from', 1 );
 
 
 
@@ -159,41 +172,84 @@ function ecard_datetime_picker() {
     $endyear   = date( 'Y' ) + 10;
     $months    = [ '', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 
-    $html = '<select name="ecard_send_time_month">';
+    $html = '<div class="ecard-datetime-picker" role="group" aria-label="' . esc_attr__( 'Select date and time to send the eCard', 'ecards' ) . '">';
+
+    // Month selector
+    $html .= '<div class="ecard-date-field">';
+    $html .= '<label for="ecard_send_time_month" class="screen-reader-text">' . esc_html__( 'Month', 'ecards' ) . '</label>';
+    $html .= '<select name="ecard_send_time_month" id="ecard_send_time_month" aria-label="' . esc_attr__( 'Select month', 'ecards' ) . '">';
 
     for ( $i = 1; $i <= 12; $i++ ) {
-        if ( (int) $i === (int) $month ) {
-            $html .= '<option selected value="' . str_pad( $i, 2, '0', STR_PAD_LEFT ) . '">' . $months[ $i ] . '</option>';
-        } else {
-            $html .= '<option value="' . str_pad( $i, 2, '0', STR_PAD_LEFT ) . '">' . $months[ $i ] . '</option>';
-        }
+        $selected = ( (int) $i === (int) $month ) ? ' selected' : '';
+        $html    .= sprintf(
+            '<option value="%s"%s>%s</option>',
+            str_pad( $i, 2, '0', STR_PAD_LEFT ),
+            $selected,
+            esc_html( $months[ $i ] )
+        );
     }
+    $html .= '</select>';
 
-    $html .= '</select> <select name="ecard_send_time_day">';
+    // Day selector
+    $html .= '<label for="ecard_send_time_day" class="screen-reader-text">' . esc_html__( 'Day', 'ecards' ) . '</label>';
+    $html .= '<select name="ecard_send_time_day" id="ecard_send_time_day" aria-label="' . esc_attr__( 'Select day', 'ecards' ) . '">';
 
     for ( $i = 1; $i <= 31; $i++ ) {
-        if ( (int) $i === (int) $day ) {
-            $html .= '<option selected value="' . str_pad( $i, 2, '0', STR_PAD_LEFT ) . '">' . $i . '</option>';
-        } else {
-            $html .= '<option value="' . str_pad( $i, 2, '0', STR_PAD_LEFT ) . '">' . $i . '</option>';
-        }
+        $selected = ( (int) $i === (int) $day ) ? ' selected' : '';
+        $html    .= sprintf(
+            '<option value="%s"%s>%d</option>',
+            str_pad( $i, 2, '0', STR_PAD_LEFT ),
+            $selected,
+            $i
+        );
     }
+    $html .= '</select>';
 
-    $html .= '</select> <select name="ecard_send_time_year">';
+    // Year selector
+    $html .= '<label for="ecard_send_time_year" class="screen-reader-text">' . esc_html__( 'Year', 'ecards' ) . '</label>';
+    $html .= '<select name="ecard_send_time_year" id="ecard_send_time_year" aria-label="' . esc_attr__( 'Select year', 'ecards' ) . '">';
 
     for ( $i = $startyear; $i <= $endyear; $i++ ) {
-        $html .= '<option value="' . $i . '">' . $i . '</option>';
+        $html .= sprintf(
+            '<option value="%d">%d</option>',
+            $i,
+            $i
+        );
     }
+    $html .= '</select>';
 
-    $html .= '</select> <select name="ecard_send_time_hour">';
+    // Time selector
+    $html .= '<label for="ecard_send_time_hour" class="screen-reader-text">' . esc_html__( 'Time', 'ecards' ) . '</label>';
+    $html .= '<select name="ecard_send_time_hour" id="ecard_send_time_hour" aria-label="' . esc_attr__( 'Select time', 'ecards' ) . '">';
 
     for ( $hours = 0; $hours < 24; $hours++ ) {
         for ( $mins = 0; $mins < 60; $mins += 30 ) {
-            $html .= '<option>' . str_pad( $hours, 2, '0', STR_PAD_LEFT ) . ':' . str_pad( $mins, 2, '0', STR_PAD_LEFT ) . '</option>';
+            $time  = sprintf(
+                '%02d:%02d',
+                $hours,
+                $mins
+            );
+            $html .= sprintf(
+                '<option value="%s">%s</option>',
+                esc_attr( $time ),
+                esc_html( $time )
+            );
         }
     }
-
     $html .= '</select>';
+    $html .= '</div>';
+
+    // Add JavaScript for enhanced accessibility
+    $html .= '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const dateFields = document.querySelectorAll(".ecard-date-field select");
+            dateFields.forEach(field => {
+                field.addEventListener("change", function() {
+                    this.setAttribute("aria-invalid", "false");
+                });
+            });
+        });
+    </script>';
 
     return $html;
 }

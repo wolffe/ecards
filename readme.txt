@@ -3,9 +3,9 @@ Contributors: butterflymedia
 Tags: ecard, electronic card, flash card, greeting card, postcard, akismet, dropbox
 License: GPLv3
 Requires at least: 4.9
-Tested up to: 6.7.1
+Tested up to: 6.7.2
 Requires PHP: 7.0
-Stable tag: 5.4.4
+Stable tag: 5.4.5
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 

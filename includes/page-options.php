@@ -17,7 +17,6 @@ function ecard_options_page() {
         update_option( 'ecard_dropbox_private', sanitize_text_field( $_POST['ecard_dropbox_private'] ) );
 
         update_option( 'ecard_user_enable', sanitize_text_field( $_POST['ecard_user_enable'] ) );
-        update_option( 'ecard_dropbox_enable', sanitize_text_field( $_POST['ecard_dropbox_enable'] ) );
 
         update_option( 'ecard_redirection', sanitize_text_field( $_POST['ecard_redirection'] ) );
         update_option( 'ecard_page_thankyou', esc_url( $_POST['ecard_page_thankyou'] ) );
@@ -31,6 +30,8 @@ function ecard_options_page() {
 
         update_option( 'ecard_use_akismet', sanitize_text_field( $_POST['ecard_use_akismet'] ) );
 
+        delete_option( 'ecard_dropbox_enable' );
+
         delete_post_meta_by_key( '_ecards_impressions' );
         delete_post_meta_by_key( '_ecards_conversions' );
 
@@ -42,20 +43,21 @@ function ecard_options_page() {
         echo '<div id="message" class="updated notice is-dismissible"><p>' . __( 'Options updated successfully!', 'ecards' ) . '</p></div>';
     } elseif ( isset( $_POST['info_designer_update'] ) ) {
         update_option( 'ecard_title', stripslashes( $_POST['ecard_title'] ) );
-        update_option( 'ecard_template', stripslashes( $_POST['ecard_template'] ) );
-        update_option( 'ecards_reusable_block_id', (int) $_POST['ecards_reusable_block_id'] );
+        update_option( 'ecard_template', wp_kses_post( $_POST['ecard_template'] ) );
         update_option( 'ecard_image_size_email', sanitize_text_field( $_POST['ecard_image_size_email'] ) );
         update_option( 'ecard_body_toggle', sanitize_text_field( $_POST['ecard_body_toggle'] ) );
 
+        delete_option( 'ecards_reusable_block_id' );
+
         echo '<div id="message" class="updated notice is-dismissible"><p>' . __( 'Options updated successfully!', 'ecards' ) . '</p></div>';
     } elseif ( isset( $_POST['info_email_update'] ) ) {
-        update_option( 'ecard_noreply', sanitize_email( $_POST['ecard_noreply'] ) );
-
         update_option( 'ecard_send_behaviour', sanitize_text_field( $_POST['ecard_send_behaviour'] ) );
         update_option( 'ecard_hardcoded_email', sanitize_email( $_POST['ecard_hardcoded_email'] ) );
         update_option( 'ecard_send_later', sanitize_text_field( $_POST['ecard_send_later'] ) );
 
         update_option( 'ecard_allow_cc', sanitize_text_field( $_POST['ecard_allow_cc'] ) );
+
+        delete_option( 'ecard_noreply' );
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . __( 'Options updated successfully!', 'ecards' ) . '</p></div>';
     } elseif ( isset( $_POST['info_labels_update'] ) ) {
@@ -87,13 +89,9 @@ function ecard_options_page() {
         <h2>eCards</h2>
 
         <?php
-        $ecard_noreply  = get_option( 'ecard_noreply' );
         $ecard_template = get_option( 'ecard_template' );
 
-        if ( empty( $ecard_noreply ) ) {
-            echo '<div id="message" class="error notice is-dismissible"><p>' . __( 'You have not set a dedicated email address for eCards! <a href="' . admin_url( 'options-general.php?page=ecards&tab=ecards_email' ) . '">Click here</a> to set it.', 'ecards' ) . '</p></div>';
-        }
-        if ( empty( $ecard_template ) && (int) get_option( 'ecards_reusable_block_id' ) === 0 ) {
+        if ( empty( $ecard_template ) ) {
             echo '<div id="message" class="error notice is-dismissible"><p>' . __( 'You have not set an email template for eCards! <a href="' . admin_url( 'options-general.php?page=ecards&tab=designer' ) . '">Click here</a> to set it.', 'ecards' ) . '</p></div>';
         }
 
@@ -122,7 +120,12 @@ function ecard_options_page() {
 
             <h2>About eCards</h2>
             <p>
-                You are using <b>eCards</b> version <b><?php echo ECARDS_VERSION; ?></b> <span class="ecards-pro-icon">PRO</span> on PHP version <?php echo PHP_VERSION; ?> and MySQL version <?php global $wpdb; echo $wpdb->db_version(); ?>.
+                You are using <b>eCards</b> version <b><?php echo ECARDS_VERSION; ?></b> <span class="ecards-pro-icon">PRO</span> on PHP version <?php echo PHP_VERSION; ?> and MySQL version 
+                                                                    <?php
+                                                                    global $wpdb;
+                                                                    echo $wpdb->db_version();
+                                                                    ?>
+                .
                 <br>&copy;<?php echo gmdate( 'Y' ); ?> <a href="https://getbutterfly.com/" rel="external"><strong>getButterfly</strong>.com</a> &middot; <small>Code wrangling since 2005</small>
             </p>
 
@@ -297,8 +300,7 @@ function ecard_options_page() {
                             <th scope="row"><label for="ecard_user_enable">User upload settings</label></th>
                             <td>
                                 <p>
-                                    <input type="checkbox" name="ecard_user_enable" value="1" <?php checked( 1, (int) get_option( 'ecard_user_enable' ) ); ?>> <label>Enable user upload</label><br>
-                                    <input type="checkbox" name="ecard_dropbox_enable" value="1" <?php checked( 1, (int) get_option( 'ecard_dropbox_enable' ) ); ?>> <label>Enable Dropbox upload</label>
+                                    <input type="checkbox" name="ecard_user_enable" value="1" <?php checked( 1, (int) get_option( 'ecard_user_enable' ) ); ?>> <label>Enable user upload</label>
                                 </p>
                                 <p>
                                     <input name="ecard_dropbox_private" id="ecard_dropbox_private" type="text" class="regular-text" value="<?php echo get_option( 'ecard_dropbox_private' ); ?>"> <label for="ecard_dropbox_private">Dropbox API Key</label>
@@ -333,8 +335,8 @@ function ecard_options_page() {
 
                                     wp_dropdown_pages(
                                         [
-                                            'name'             => 'ecard_gdpr_privacy_policy_page',
-                                            'selected'         => $privacy_policy_page_id,
+                                            'name'     => 'ecard_gdpr_privacy_policy_page',
+                                            'selected' => $privacy_policy_page_id,
                                             'show_option_none' => 'Select a page...',
                                         ]
                                     );
@@ -466,7 +468,8 @@ function ecard_options_page() {
                                     $thumbsize   = isset( $options['thumb_size_box_select'] ) ? esc_attr( $options['thumb_size_box_select'] ) : '';
                                     $image_sizes = ecards_return_image_sizes();
 
-                                    foreach ( $image_sizes as $size => $atts ) { ?>
+                                    foreach ( $image_sizes as $size => $atts ) {
+                                        ?>
                                         <option value="<?php echo $size; ?>" <?php selected( $thumbsize, $size ); ?>><?php echo $size . ' - ' . implode( 'x', $atts ); ?></option>
                                     <?php } ?>
                                     <option value="full">full (size depends on the original image)</option>
@@ -485,50 +488,22 @@ function ecard_options_page() {
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"></th>
+                            <th scope="row"><label for="ecard_template">Email template</label></th>
                             <td>
-                                <div class="ecards-note" style="background-color: rgba(231, 76, 60, 0.25); border-left: 2px solid #E74C3C; border-radius: 2px; padding: 4px 16px;">
-                                    <p><b>Note #1:</b> The template Pattern will override the classic template.</p>
-                                    <p><b>Note #2:</b> Some of the block editor styles will not be available inside your email client (e.g. columns, buttons and so on).</p>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><label for="ecards_reusable_block_id">eCard template Pattern</label></th>
-                            <td>
-                                <select name="ecards_reusable_block_id" id="ecards_reusable_block_id">
-                                    <option value="">Select a Pattern...</option>
-
-                                    <?php
-                                    $ecards_reusable_block_id = get_option( 'ecards_reusable_block_id' );
-
-                                    $args = [
-                                        'post_type'      => 'wp_block',
-                                        'posts_per_page' => -1,
-                                        'order'          => 'ASC',
-                                        'orderby'        => 'title',
-                                    ];
-
-                                    $wp_block_query = new WP_Query( $args );
-
-                                    if ( $wp_block_query->have_posts() ) {
-                                        while ( $wp_block_query->have_posts() ) {
-                                            $wp_block_query->the_post();
-
-                                            $selected = ( (int) $ecards_reusable_block_id === (int) get_the_ID() ) ? 'selected' : '';
-                                            echo '<option value="' . get_the_ID() . '" ' . $selected . '>' . get_the_title() . '</option>';
-                                        }
-                                    }
-                                    ?>
-
-                                </select>
-                                <br><small><a href="<?php echo admin_url( 'edit.php?post_type=wp_block' ); ?>">Select your eCards template Pattern or create one now</a>.</small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><label for="ecard_template">Email template (classic)</label></th>
-                            <td>
-                                <textarea rows="20" autocomplete="off" name="ecard_template" id="ecard_template" class="large-text"><?php echo get_option( 'ecard_template' ); ?></textarea>
+                                <?php
+                                $ecard_template = get_option( 'ecard_template' );
+                                wp_editor(
+                                    $ecard_template,
+                                    'ecard_template',
+                                    [
+                                        'textarea_name' => 'ecard_template',
+                                        'textarea_rows' => 20,
+                                        //'media_buttons' => false,
+                                        //'teeny' => true,
+                                        'quicktags'     => true,
+                                    ]
+                                );
+                                ?>
                                 <br><small>Use <code class="codor">[name]</code> and <code class="codor">[email]</code> Designer tags to replace sender's name and email address.</small>
                                 <br><small>Use <code class="codor">[image]</code> Designer tag to add the eCard image.</small>
                                 <br><small>Use <code class="codor">[ecard-link]</code> Designer tag to include the eCard URL.</small>
@@ -545,170 +520,186 @@ function ecard_options_page() {
                 <hr>
                 <p><input type="submit" name="info_designer_update" class="button button-primary" value="Save Changes"></p>
             </form>
-		<?php } else if ($active_tab === 'ecards_email') { ?>
-    		<form method="post" action="">
-    			<h3 class="title"><?php _e('Email Settings', 'ecards'); ?></h3>
+        <?php } elseif ( $active_tab === 'ecards_email' ) { ?>
+            <form method="post" action="">
+                <h3 class="title"><?php _e( 'Email Settings', 'ecards' ); ?></h3>
                 <p><b>Note:</b> To avoid your email adress being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address.</p>
                 <p>Sometimes emails end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up a dedicated email address.</p>
 
                 <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP Mailer/Email Log</a>.</p>
-                <div class="postbox">
-                    <div class="inside">
-                        <table class="form-table">
-                            <tbody>
-                                <tr>
-                                    <th scope="row"><label for="ecard_noreply">Dedicated email address</label></th>
-                                    <td>
-                                        <input name="ecard_noreply" id="ecard_noreply" type="email" class="regular-text" value="<?php echo get_option('ecard_noreply'); ?>">
-                                        <br><small>Create a dedicated email address to use for sending eCards and prevent your messages landing in Spam/Junk folders.<br>Use <code>noreply@example.com</code>, <code>ecards@example.com</code>, <code>wordpress@example.com</code> or something similar.</small>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
+                <p>Create a dedicated email address to use for sending eCards and prevent your messages landing in Spam/Junk folders.<br>Use <code>noreply@example.com</code>, <code>ecards@example.com</code>, <code>wordpress@example.com</code> or something similar.</p>
+ 
                 <table class="form-table">
-    		        <tbody>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_send_behaviour">Sending behaviour</label></th>
-    		                <td>
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="ecard_send_behaviour">Sending behaviour</label></th>
+                            <td>
                                 <select name="ecard_send_behaviour">
-									<option value="1"<?php if(get_option('ecard_send_behaviour') === '1') echo ' selected'; ?>>Require recipient email address</option>
-									<option value="0"<?php if(get_option('ecard_send_behaviour') === '0') echo ' selected'; ?>>Hide recipient and send all eCards to the following email address</option>
-								</select>
-                                <br>&lfloor; <input name="ecard_hardcoded_email" type="email" class="regular-text" value="<?php echo get_option('ecard_hardcoded_email'); ?>">
-								<br><small>If you want to send all eCards to a universal email address, select the option above and fill in the email address.</small>
-				            </td>
-				        </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_send_later">"Send Later" behaviour</label></th>
-    		                <td>
+                                    <option value="1"
+                                    <?php
+                                    if ( get_option( 'ecard_send_behaviour' ) === '1' ) {
+                                        echo ' selected';}
+                                    ?>
+                                    >Require recipient email address</option>
+                                    <option value="0"
+                                    <?php
+                                    if ( get_option( 'ecard_send_behaviour' ) === '0' ) {
+                                        echo ' selected';}
+                                    ?>
+                                    >Hide recipient and send all eCards to the following email address</option>
+                                </select>
+                                <br>&lfloor; <input name="ecard_hardcoded_email" type="email" class="regular-text" value="<?php echo get_option( 'ecard_hardcoded_email' ); ?>">
+                                <br><small>If you want to send all eCards to a universal email address, select the option above and fill in the email address.</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="ecard_send_later">"Send Later" behaviour</label></th>
+                            <td>
                                 <select name="ecard_send_later">
-									<option value="1"<?php if(get_option('ecard_send_later') === '1') echo ' selected'; ?>>Allow eCard scheduling</option>
-									<option value="0"<?php if(get_option('ecard_send_later') === '0') echo ' selected'; ?>>Do not allow eCard scheduling</option>
-								</select>
-								<br><small>Allow users to pick a later date and time to send the eCard. The plugin uses the server time - <b><code><?php echo get_option('timezone_string'); ?></code></b> - for post scheduling.</small>
-				            </td>
-				        </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_allow_cc">Carbon copy (CC)</label></th>
-    		                <td>
+                                    <option value="1"
+                                    <?php
+                                    if ( get_option( 'ecard_send_later' ) === '1' ) {
+                                        echo ' selected';}
+                                    ?>
+                                    >Allow eCard scheduling</option>
+                                    <option value="0"
+                                    <?php
+                                    if ( get_option( 'ecard_send_later' ) === '0' ) {
+                                        echo ' selected';}
+                                    ?>
+                                    >Do not allow eCard scheduling</option>
+                                </select>
+                                <br><small>Allow users to pick a later date and time to send the eCard. The plugin uses the server time - <b><code><?php echo get_option( 'timezone_string' ); ?></code></b> - for post scheduling.</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="ecard_allow_cc">Carbon copy (CC)</label></th>
+                            <td>
                                 <select name="ecard_allow_cc" id="ecard_allow_cc">
-									<option value="on"<?php if(get_option('ecard_allow_cc') === 'on') echo ' selected'; ?>>Allow sender to CC self</option>
-									<option value="off"<?php if(get_option('ecard_allow_cc') === 'off') echo ' selected'; ?>>Do not allow sender to CC self</option>
-								</select>
-								<br><small>Display a checkbox to allow the sender to CC self</small>
-				            </td>
-				        </tr>
-				    </tbody>
-				</table>
+                                    <option value="on"
+                                    <?php
+                                    if ( get_option( 'ecard_allow_cc' ) === 'on' ) {
+                                        echo ' selected';}
+                                    ?>
+                                    >Allow sender to CC self</option>
+                                    <option value="off"
+                                    <?php
+                                    if ( get_option( 'ecard_allow_cc' ) === 'off' ) {
+                                        echo ' selected';}
+                                    ?>
+                                    >Do not allow sender to CC self</option>
+                                </select>
+                                <br><small>Display a checkbox to allow the sender to CC self</small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <hr>
-    			<p><input type="submit" name="info_email_update" class="button button-primary" value="Save Changes"></p>
-			</form>
-		<?php } else if ($active_tab === 'ecards_labels') { ?>
-			<form method="post" action="">
-    			<h3 class="title"><?php _e('Labels', 'ecards'); ?></h3>
-    			<p>Use the labels to personalize or translate your eCards form.</p>
-    		    <table class="form-table">
-    		        <tbody>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_name_own">Your name<br><small>(input label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_name_own" id="ecard_label_name_own" type="text" class="regular-text" value="<?php echo get_option('ecard_label_name_own'); ?>">
+                <p><input type="submit" name="info_email_update" class="button button-primary" value="Save Changes"></p>
+            </form>
+        <?php } elseif ( $active_tab === 'ecards_labels' ) { ?>
+            <form method="post" action="">
+                <h3 class="title"><?php _e( 'Labels', 'ecards' ); ?></h3>
+                <p>Use the labels to personalize or translate your eCards form.</p>
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="ecard_label_name_own">Your name<br><small>(input label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_name_own" id="ecard_label_name_own" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_name_own' ); ?>">
                                 <br><small>Default is "Your name"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_email_own">Your email address<br><small>(input label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_email_own" id="ecard_label_email_own" type="text" class="regular-text" value="<?php echo get_option('ecard_label_email_own'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_email_own">Your email address<br><small>(input label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_email_own" id="ecard_label_email_own" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_email_own' ); ?>">
                                 <br><small>Default is "Your email address"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_email_friend">Your friend's email address<br><small>(input label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_email_friend" id="ecard_label_email_friend" type="text" class="regular-text" value="<?php echo get_option('ecard_label_email_friend'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_email_friend">Your friend's email address<br><small>(input label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_email_friend" id="ecard_label_email_friend" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_email_friend' ); ?>">
                                 <br><small>Default is "Your friend's email address"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_message">eCard message<br><small>(textarea label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_message" id="ecard_label_message" type="text" class="regular-text" value="<?php echo get_option('ecard_label_message'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_message">eCard message<br><small>(textarea label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_message" id="ecard_label_message" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_message' ); ?>">
                                 <br><small>Default is "eCard message"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_send_time">eCard send date/time<br><small>(date/time picker label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_send_time" id="ecard_label_send_time" type="text" class="regular-text" value="<?php echo get_option('ecard_label_send_time'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_send_time">eCard send date/time<br><small>(date/time picker label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_send_time" id="ecard_label_send_time" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_send_time' ); ?>">
                                 <br><small>Default is "Schedule this eCard"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_cc">Send a copy to self<br><small>(checkbox label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_cc" id="ecard_label_cc" type="text" class="regular-text" value="<?php echo get_option('ecard_label_cc'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_cc">Send a copy to self<br><small>(checkbox label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_cc" id="ecard_label_cc" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_cc' ); ?>">
                                 <br><small>Default is "Send a copy to self"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_success">Success message<br><small>(paragraph)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_success" id="ecard_label_success" type="text" class="regular-text" value="<?php echo get_option('ecard_label_success'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_success">Success message<br><small>(paragraph)</small></label></th>
+                            <td>
+                                <input name="ecard_label_success" id="ecard_label_success" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_success' ); ?>">
                                 <br><small>Default is "eCard sent successfully!"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_submit">eCard submit<br><small>(button label)</small></label></th>
-    		                <td>
-                                <input id="ecard_submit" name="ecard_submit" type="text" class="regular-text" value="<?php echo get_option('ecard_submit'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_submit">eCard submit<br><small>(button label)</small></label></th>
+                            <td>
+                                <input id="ecard_submit" name="ecard_submit" type="text" class="regular-text" value="<?php echo get_option( 'ecard_submit' ); ?>">
                                 <br><small>Default is "Send eCard"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_link_anchor">Email link anchor<br><small>(link)</small></label></th>
-    		                <td>
-                                <input name="ecard_link_anchor" name="ecard_link_anchor" type="text" class="regular-text" value="<?php echo get_option('ecard_link_anchor'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_link_anchor">Email link anchor<br><small>(link)</small></label></th>
+                            <td>
+                                <input name="ecard_link_anchor" name="ecard_link_anchor" type="text" class="regular-text" value="<?php echo get_option( 'ecard_link_anchor' ); ?>">
                                 <br><small>Default is "Click to see your eCard!"</small>
                             </td>
                         </tr>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_label_gdpr_privacy_policy_page">Privacy Policy/GDPR consent text<br><small>(checkbox label)</small></label></th>
-    		                <td>
-                                <input name="ecard_label_gdpr_privacy_policy_page" name="ecard_label_gdpr_privacy_policy_page" type="text" class="regular-text" value="<?php echo get_option('ecard_label_gdpr_privacy_policy_page'); ?>">
+                        <tr>
+                            <th scope="row"><label for="ecard_label_gdpr_privacy_policy_page">Privacy Policy/GDPR consent text<br><small>(checkbox label)</small></label></th>
+                            <td>
+                                <input name="ecard_label_gdpr_privacy_policy_page" name="ecard_label_gdpr_privacy_policy_page" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_gdpr_privacy_policy_page' ); ?>">
                                 <br><small>Default is "Check here to indicate that you have read and agree to our terms and conditions"</small>
                             </td>
                         </tr>
                     </tbody>
                 </table>
 
-				<hr>
-				<p><input type="submit" name="info_labels_update" class="button button-primary" value="Save Changes"></p>
-			</form>
-		<?php } else if ($active_tab === 'ecards_diagnostics') { ?>
-			<form method="post" action="">
-    			<h3 class="title"><?php _e('Diagnostics', 'ecards'); ?></h3>
+                <hr>
+                <p><input type="submit" name="info_labels_update" class="button button-primary" value="Save Changes"></p>
+            </form>
+        <?php } elseif ( $active_tab === 'ecards_diagnostics' ) { ?>
+            <form method="post" action="">
+                <h3 class="title"><?php _e( 'Diagnostics', 'ecards' ); ?></h3>
                 <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP Mailer/Email Log</a>.</p>
-    		    <table class="form-table">
-    		        <tbody>
-    		            <tr>
-    		                <th scope="row"><label for="ecard_test_email"><?php _e('Test <code>wp_mail()</code> function', 'ecards'); ?></label></th>
-    		                <td>
-                                <input name="ecard_test_email" id="ecard_test_email" type="email" class="regular-text" value="<?php echo get_option('admin_email'); ?>">
-                                <br><small><?php _e('Use this address to send a test email message.', 'ecards'); ?></small>
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="ecard_test_email"><?php _e( 'Test <code>wp_mail()</code> function', 'ecards' ); ?></label></th>
+                            <td>
+                                <input name="ecard_test_email" id="ecard_test_email" type="email" class="regular-text" value="<?php echo get_option( 'admin_email' ); ?>">
+                                <br><small><?php _e( 'Use this address to send a test email message.', 'ecards' ); ?></small>
                             </td>
                         </tr>
                     </tbody>
                 </table>
 
                 <hr>
-                <p><input type="submit" name="info_debug_update" class="button button-primary" value="<?php _e('Test/Save Changes', 'ecards'); ?>"></p>
-			</form>
+                <p><input type="submit" name="info_debug_update" class="button button-primary" value="<?php _e( 'Test/Save Changes', 'ecards' ); ?>"></p>
+            </form>
         <?php } ?>
-	</div>
+    </div>
     <?php
 }

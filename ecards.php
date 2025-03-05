@@ -5,13 +5,13 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com/
-Version: 5.4.4
+Version: 5.4.5
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
 
 eCards
-Copyright (C) 2011-2024 Ciprian Popescu (getbutterfly@gmail.com)
+Copyright (C) 2011-2025 Ciprian Popescu (getbutterfly@gmail.com)
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'ECARDS_VERSION', '5.4.4' );
+define( 'ECARDS_VERSION', '5.4.5' );
 
 
 
@@ -83,7 +83,6 @@ function ecards_install() {
     add_option( 'ecard_link_anchor', 'Click to see your eCard!' );
     add_option( 'ecard_redirection', 0 );
     add_option( 'ecard_page_thankyou', '' );
-    add_option( 'ecard_noreply', '' );
     add_option( 'ecard_title', 'eCard!' );
     add_option( 'ecard_body_toggle', 1 );
     add_option( 'ecard_restrictions', 0 );
@@ -238,17 +237,8 @@ function wp_ecard_display_ecards( $atts ) {
     $ecard_page_thankyou  = get_option( 'ecard_page_thankyou' );
     $ecard_title          = get_option( 'ecard_title' );
 
-    // eCard Designer
-    if ( (int) get_option( 'ecards_reusable_block_id' ) > 0 ) {
-        $ecards_reusable_block_id = (int) get_option( 'ecards_reusable_block_id' );
-
-        $ecards_reusable_block_object = get_post( $ecards_reusable_block_id );
-
-        $ecard_template = apply_filters( 'the_content', $ecards_reusable_block_object->post_content );
-    } else {
-        $ecard_template = wpautop( get_option( 'ecard_template' ) );
-    }
-    //
+    // Get eCard template
+    $ecard_template = wpautop( get_option( 'ecard_template' ) );
 
     $ecard_body_toggle      = (int) get_option( 'ecard_body_toggle' );
     $ecard_image_size_email = get_option( 'ecard_image_size_email' );
@@ -256,6 +246,12 @@ function wp_ecard_display_ecards( $atts ) {
     // send eCard routine
     // since eCards 2.2.0
     if ( isset( $_POST['ecard_send'] ) ) {
+        // Verify nonce
+        if ( ! isset( $_POST['ecard_nonce'] ) || ! wp_verify_nonce( $_POST['ecard_nonce'], 'ecard_send_nonce' ) ) {
+            echo '<div class="ecard-error">' . __( 'Security check failed. Please try again.', 'ecards' ) . '</div>';
+            return $output;
+        }
+
         // begin user attachment (if any)
         $no_attachments = 1;
 
@@ -319,17 +315,12 @@ function wp_ecard_display_ecards( $atts ) {
         }
         //
 
-        // Dropbox image
-        if ( ! empty( $_POST['selected-file'] ) ) {
-            $ecard_image = '<a href="' . esc_url( $_POST['selected-file'] ) . '">' . esc_url( $_POST['selected-file'] ) . '</a>';
+        // Set the eCard image
+        if ( ! empty( $ecard_pick_me ) ) {
+            $ecard_image = $ecard_pick_me;
         } else {
-            // If there's no selected eCard (only user uploaded one)
-            if ( ! empty( $ecard_pick_me ) ) {
-                $ecard_image = $ecard_pick_me;
-            } else {
-                $image       = wp_get_attachment_image_src( $attach_id, $ecard_image_size_email );
-                $ecard_image = '<img src="' . $image[0] . '" alt="" style="max-width: 100%;">';
-            }
+            $image       = wp_get_attachment_image_src( $attach_id, $ecard_image_size_email );
+            $ecard_image = '<img src="' . $image[0] . '" alt="" style="max-width: 100%;">';
         }
 
         $ecard_content = sanitize_text_field( $_POST['ecard_include_content'] );
@@ -456,25 +447,10 @@ function wp_ecard_display_ecards( $atts ) {
         $output .= '<p class="ecard-confirmation">' . esc_html( $ecard_label_success ) . '</p>';
     }
 
-    $output .= '<div class="ecard-container">
+    $output         .= '<div class="ecard-container">
         <form action="#" method="post" enctype="multipart/form-data" id="eCardForm">';
-
+            $output .= wp_nonce_field( 'ecard_send_nonce', 'ecard_nonce', true, false );
             $output .= ecard_get_attachments( get_the_ID(), $id_array );
-
-    if ( (int) get_option( 'ecard_dropbox_enable' ) === 1 ) {
-        $output .= '<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="' . get_option( 'ecard_dropbox_private' ) . '"></script>
-                <p id="droptarget"></p>
-                <script>
-                options = {
-                    success: function(files) {
-                        document.getElementById("selected-file").value = files[0].link;
-                    },
-                    extensions: ["images"]
-                };
-                var button = Dropbox.createChooseButton(options); document.getElementById("droptarget").appendChild(button);
-                </script>
-                <input type="hidden" id="selected-file" name="selected-file">';
-    }
 
     if ( (int) get_option( 'ecard_user_enable' ) === 1 ) {
         $output .= '<p><input type="file" name="file" id="file"></p>';
