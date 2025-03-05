@@ -43,7 +43,7 @@ function wpe_ecard_cpt() {
         'labels'              => $labels,
         'supports'            => [ 'title', 'editor', 'author', 'custom-fields' ],
         'hierarchical'        => false,
-        'public'              => true,
+        'public'              => false,
         'show_ui'             => true,
         'show_in_menu'        => true,
         'menu_position'       => 25,
@@ -53,7 +53,7 @@ function wpe_ecard_cpt() {
         'can_export'          => false,
         'has_archive'         => false,
         'exclude_from_search' => true,
-        'publicly_queryable'  => true,
+        'publicly_queryable'  => false,
         'rewrite'             => false,
         'capability_type'     => 'post',
         'show_in_rest'        => true,
@@ -67,3 +67,19 @@ function wpe_ecard_cpt() {
 }
 
 add_action( 'init', 'wpe_ecard_cpt', 0 );
+
+// Add noindex meta tag for eCard posts
+function ecard_add_noindex_meta() {
+    if ( is_singular( 'ecard' ) ) {
+        echo '<meta name="robots" content="noindex,nofollow">' . "\n";
+    }
+}
+add_action( 'wp_head', 'ecard_add_noindex_meta', 1 );
+
+// Prevent eCard posts from being included in sitemaps
+function ecard_exclude_from_sitemap( $post_types ) {
+    unset( $post_types['ecard'] );
+
+    return $post_types;
+}
+add_filter( 'wp_sitemaps_post_types', 'ecard_exclude_from_sitemap' );
