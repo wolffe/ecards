@@ -27,6 +27,16 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
+= 5.4.5 =
+* Add wp_editor() functionality to the template editor
+* Add ARIA accessibility labels
+* Enhance eCard form security by adding nonces
+* Improve Akismet spam detection
+* Make sure eCards and eCard collections are invisible to Google, SEO plugins and public queries
+* Remove reusable block/pattern functionality
+* Remove "From" email header, as this should be controlled by an SMTP plugin
+* Remove deprecated Dropbox integration
+
 = 5.4.4 =
 * FIX: Fix undefined variable
 * UPDATE: Update WordPress compatibility
