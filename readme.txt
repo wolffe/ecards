@@ -5,7 +5,7 @@ License: GPLv3
 Requires at least: 4.9
 Tested up to: 6.7.2
 Requires PHP: 7.0
-Stable tag: 5.4.5
+Stable tag: 5.5.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,6 +26,10 @@ There are two ways you can use this plugin:
 5. A new eCard Collections menu will appear in WordPress
 
 == Changelog ==
+
+= 5.5.0 =
+* Fix issue with undefined/empty gallery object
+* Add plugin updater
 
 = 5.4.5 =
 * Add wp_editor() functionality to the template editor
