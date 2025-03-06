@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'ECARDS_VERSION', '5.4.5' );
 
-
+require plugin_dir_path( __FILE__ ) . '/includes/updater.php';
 
 /**
  * Plugin initialization
@@ -214,13 +214,15 @@ function wp_ecard_display_ecards( $atts ) {
                 $id_array[] = $post_block['attrs']['id'];
             }
         } else {
-            // If there is not a gallery block (classic editor)
+            // If there is no gallery block (classic editor)
 
             // Get the gallery info
             $gallery = get_post_gallery( $collection_id, false );
 
-            // Make an array of image IDs
-            $id_array = explode( ',', $gallery['ids'] );
+            if ( isset( $gallery ) && isset( $gallery['ids'] ) && is_array( $gallery['ids'] ) && count( $gallery['ids'] ) > 0 ) {
+                // Make an array of image IDs
+                $id_array = explode( ',', $gallery['ids'] );
+            }
         }
     }
 
