@@ -14,8 +14,6 @@ function ecard_options_page() {
         update_option( 'ecard_color_scheme', sanitize_text_field( $_POST['ecard_color_scheme'] ) );
         update_option( 'ecard_color_accent', sanitize_text_field( $_POST['ecard_color_accent'] ) );
 
-        update_option( 'ecard_dropbox_private', sanitize_text_field( $_POST['ecard_dropbox_private'] ) );
-
         update_option( 'ecard_user_enable', sanitize_text_field( $_POST['ecard_user_enable'] ) );
 
         update_option( 'ecard_redirection', sanitize_text_field( $_POST['ecard_redirection'] ) );
@@ -29,8 +27,10 @@ function ecard_options_page() {
         update_option( 'ecard_html_fix', sanitize_text_field( $_POST['ecard_html_fix'] ) );
 
         update_option( 'ecard_use_akismet', sanitize_text_field( $_POST['ecard_use_akismet'] ) );
+        update_option( 'ecard_captcha', (int) sanitize_text_field( $_POST['ecard_captcha'] ) );
 
         delete_option( 'ecard_dropbox_enable' );
+        delete_option( 'ecard_dropbox_private' );
 
         delete_post_meta_by_key( '_ecards_impressions' );
         delete_post_meta_by_key( '_ecards_conversions' );
@@ -274,26 +274,35 @@ function ecard_options_page() {
                         </tr>
 
                         <tr>
-                            <th scope="row"><label for="ecard_use_akismet">Akismet settings</label></th>
+                            <th scope="row"><label for="ecard_use_akismet">Anti-spam settings</label></th>
                             <td>
-                                <select name="ecard_use_akismet" id="ecard_use_akismet">
-                                    <option value="true"<?php selected( 'true', get_option( 'ecard_use_akismet' ) ); ?>>Use Akismet (recommended)</option>
-                                    <option value="false"<?php selected( 'false', get_option( 'ecard_use_akismet' ) ); ?>>Do not use Akismet</option>
-                                </select>
+                                <p>
+                                    <select name="ecard_use_akismet" id="ecard_use_akismet">
+                                        <option value="false"<?php selected( 'false', get_option( 'ecard_use_akismet' ) ); ?>>Do not use Akismet</option>
+                                        <option value="true"<?php selected( 'true', get_option( 'ecard_use_akismet' ) ); ?>>Use Akismet (recommended)</option>
+                                    </select>
 
-                                <?php
-                                if ( function_exists( 'akismet_init' ) ) {
-                                    $wpcom_api_key = get_option( 'wordpress_api_key' );
+                                    <?php
+                                    if ( function_exists( 'akismet_init' ) ) {
+                                        $wpcom_api_key = get_option( 'wordpress_api_key' );
 
-                                    if ( ! empty( $wpcom_api_key ) ) {
-                                        echo '<p><small>Your Akismet plugin is installed and working properly. Your API key is <code>' . $wpcom_api_key . '</code>.</small></p>';
+                                        if ( ! empty( $wpcom_api_key ) ) {
+                                            echo '<p><small>Your Akismet plugin is installed and working properly. Your API key is <code>' . $wpcom_api_key . '</code>.</small></p>';
+                                        } else {
+                                            echo '<p><small>Your Akismet plugin is installed but no API key is present. Please fix it.</small></p>';
+                                        }
                                     } else {
-                                        echo '<p><small>Your Akismet plugin is installed but no API key is present. Please fix it.</small></p>';
+                                        echo '<p><small>You need Akismet in order to send eCards. Please install/activate it.</small></p>';
                                     }
-                                } else {
-                                    echo '<p><small>You need Akismet in order to send eCards. Please install/activate it.</small></p>';
-                                }
-                                ?>
+                                    ?>
+                                </p>
+                                <p>
+                                    <select name="ecard_captcha" id="ecard_captcha">
+                                        <option value="0"<?php selected( 0, (int) get_option( 'ecard_captcha' ) ); ?>>Disable CAPTCHA</option>
+                                        <option value="1"<?php selected( 1, (int) get_option( 'ecard_captcha' ) ); ?>>Enable CAPTCHA</option>
+                                    </select>
+                                    <br><small>Enable a simple CAPTCHA to prevent spam submissions.</small>
+                                </p>
                             </td>
                         </tr>
                         <tr>
@@ -301,10 +310,6 @@ function ecard_options_page() {
                             <td>
                                 <p>
                                     <input type="checkbox" name="ecard_user_enable" value="1" <?php checked( 1, (int) get_option( 'ecard_user_enable' ) ); ?>> <label>Enable user upload</label>
-                                </p>
-                                <p>
-                                    <input name="ecard_dropbox_private" id="ecard_dropbox_private" type="text" class="regular-text" value="<?php echo get_option( 'ecard_dropbox_private' ); ?>"> <label for="ecard_dropbox_private">Dropbox API Key</label>
-                                    <br><small>Allow users to send images from their Dropbox accounts. Requires an <a href="https://www.dropbox.com/developers/dropins/chooser/js" rel="external">API key</a>.</small>
                                 </p>
                             </td>
                         </tr>
@@ -523,11 +528,10 @@ function ecard_options_page() {
         <?php } elseif ( $active_tab === 'ecards_email' ) { ?>
             <form method="post" action="">
                 <h3 class="title"><?php _e( 'Email Settings', 'ecards' ); ?></h3>
-                <p><b>Note:</b> To avoid your email adress being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address.</p>
-                <p>Sometimes emails end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up a dedicated email address.</p>
+                <p><b>Note:</b> To avoid your email address being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address.</p>
+                <p>Emails sometimes end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up a dedicated email address.</p>
 
                 <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP Mailer/Email Log</a>.</p>
-                <p>Create a dedicated email address to use for sending eCards and prevent your messages landing in Spam/Junk folders.<br>Use <code>noreply@example.com</code>, <code>ecards@example.com</code>, <code>wordpress@example.com</code> or something similar.</p>
  
                 <table class="form-table">
                     <tbody>
