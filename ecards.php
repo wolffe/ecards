@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images or upload your own.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com/
-Version: 5.5.0
+Version: 5.5.1
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: ecards
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'ECARDS_VERSION', '5.5.0' );
+define( 'ECARDS_VERSION', '5.5.1' );
 
 require plugin_dir_path( __FILE__ ) . '/includes/updater.php';
 
@@ -518,10 +518,10 @@ function wp_ecard_display_ecards( $atts ) {
     // Add CAPTCHA field if enabled
     if ( (int) get_option( 'ecard_captcha' ) === 1 && $captcha_data ) {
         $output .= '<p>
-            <label for="ecard_captcha_answer">' . __('Security Check', 'ecards') . '</label><br>
-            <img src="' . esc_attr($captcha_data['image']) . '" alt="CAPTCHA" style="border: 1px solid #ccc; margin-bottom: 10px;"><br>
+            <label for="ecard_captcha_answer">' . __( 'Security Check', 'ecards' ) . '</label><br>
+            <img src="' . esc_attr( $captcha_data['image'] ) . '" alt="CAPTCHA" style="border: 1px solid #ccc; margin-bottom: 10px;"><br>
             <input type="text" id="ecard_captcha_answer" name="ecard_captcha_answer" required maxlength="5" style="text-transform: uppercase;">
-            <br><small>' . __('Please enter the 5 characters shown in the image above.', 'ecards') . '</small>
+            <br><small>' . __( 'Please enter the 5 characters shown in the image above.', 'ecards' ) . '</small>
         </p>';
     }
 
@@ -566,62 +566,62 @@ add_filter( "plugin_action_links_$plugin", 'ecards_settings_link' );
 function ecard_generate_captcha() {
     // Generate random string
     $characters = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Excluding confusing characters
-    $string = '';
-    for ($i = 0; $i < 5; $i++) {
-        $string .= $characters[rand(0, strlen($characters) - 1)];
+    $string     = '';
+    for ( $i = 0; $i < 5; $i++ ) {
+        $string .= $characters[ rand( 0, strlen( $characters ) - 1 ) ];
     }
-    
+
     // Store the result in a transient
-    set_transient('ecard_captcha_' . get_current_user_id(), $string, 300); // 5 minutes expiry
-    
+    set_transient( 'ecard_captcha_' . get_current_user_id(), $string, 300 ); // 5 minutes expiry
+
     // Create image
-    $image = imagecreatetruecolor(150, 50);
-    if (!$image) {
+    $image = imagecreatetruecolor( 150, 50 );
+    if ( ! $image ) {
         return false;
     }
-    
+
     // Allocate colors
-    $bg = imagecolorallocate($image, 255, 255, 255);
-    $text_color = imagecolorallocate($image, 0, 0, 0);
-    $noise_color = imagecolorallocate($image, 200, 200, 200);
-    
+    $bg          = imagecolorallocate( $image, 255, 255, 255 );
+    $text_color  = imagecolorallocate( $image, 0, 0, 0 );
+    $noise_color = imagecolorallocate( $image, 200, 200, 200 );
+
     // Fill background
-    imagefilledrectangle($image, 0, 0, 150, 50, $bg);
-    
+    imagefilledrectangle( $image, 0, 0, 150, 50, $bg );
+
     // Add noise
-    for ($i = 0; $i < 100; $i++) {
-        imagesetpixel($image, rand(0, 150), rand(0, 50), $noise_color);
+    for ( $i = 0; $i < 100; $i++ ) {
+        imagesetpixel( $image, rand( 0, 150 ), rand( 0, 50 ), $noise_color );
     }
-    
+
     // Add lines
-    for ($i = 0; $i < 3; $i++) {
-        imageline($image, rand(0, 150), rand(0, 50), rand(0, 150), rand(0, 50), $noise_color);
+    for ( $i = 0; $i < 3; $i++ ) {
+        imageline( $image, rand( 0, 150 ), rand( 0, 50 ), rand( 0, 150 ), rand( 0, 50 ), $noise_color );
     }
-    
+
     // Add text
     $font_size = 5;
-    $x = 20;
-    $y = 30;
-    imagestring($image, $font_size, $x, $y, $string, $text_color);
-    
+    $x         = 20;
+    $y         = 30;
+    imagestring( $image, $font_size, $x, $y, $string, $text_color );
+
     // Output image
     ob_start();
-    imagepng($image);
+    imagepng( $image );
     $image_data = ob_get_clean();
-    imagedestroy($image);
-    
-    if (empty($image_data)) {
+    imagedestroy( $image );
+
+    if ( empty( $image_data ) ) {
         return false;
     }
-    
+
     return [
-        'image' => 'data:image/png;base64,' . base64_encode($image_data),
-        'string' => $string
+        'image'  => 'data:image/png;base64,' . base64_encode( $image_data ),
+        'string' => $string,
     ];
 }
 
-function ecard_validate_captcha($answer) {
-    $stored_result = get_transient('ecard_captcha_' . get_current_user_id());
-    delete_transient('ecard_captcha_' . get_current_user_id());
-    return strtoupper($answer) === strtoupper($stored_result);
+function ecard_validate_captcha( $answer ) {
+    $stored_result = get_transient( 'ecard_captcha_' . get_current_user_id() );
+    delete_transient( 'ecard_captcha_' . get_current_user_id() );
+    return strtoupper( $answer ) === strtoupper( $stored_result );
 }

@@ -1,11 +1,11 @@
 === eCards ===
 Contributors: butterflymedia
-Tags: ecard, electronic card, flash card, greeting card, postcard, akismet, dropbox
+Tags: ecard, electronic card, flash card, greeting card, postcard, akismet
 License: GPLv3
 Requires at least: 4.9
 Tested up to: 6.7.2
 Requires PHP: 7.0
-Stable tag: 5.5.0
+Stable tag: 5.5.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -26,6 +26,11 @@ There are two ways you can use this plugin:
 5. A new eCard Collections menu will appear in WordPress
 
 == Changelog ==
+
+= 5.5.1 =
+* Add basic CAPTCHA feature
+* Update contextual help and help strings
+* Remove all traces of the Dropbox deprecated feature
 
 = 5.5.0 =
 * Fix issue with undefined/empty gallery object
