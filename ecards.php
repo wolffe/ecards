@@ -2,7 +2,7 @@
 /*
 Plugin Name: eCards
 Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
-Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images, upload your own or select from your Dropbox folder.
+Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images or upload your own.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com/
 Version: 5.5.0
@@ -97,6 +97,7 @@ function ecards_install() {
     add_option( 'ecard_allow_cc', 'off' );
     add_option( 'ecard_use_akismet', 'false' );
     add_option( 'ecard_columns', 3 );
+    add_option( 'ecard_captcha', 0 );
 }
 
 register_activation_hook( __FILE__, 'ecards_install' );
@@ -252,6 +253,14 @@ function wp_ecard_display_ecards( $atts ) {
         if ( ! isset( $_POST['ecard_nonce'] ) || ! wp_verify_nonce( $_POST['ecard_nonce'], 'ecard_send_nonce' ) ) {
             echo '<div class="ecard-error">' . __( 'Security check failed. Please try again.', 'ecards' ) . '</div>';
             return $output;
+        }
+
+        // Validate CAPTCHA if enabled
+        if ( (int) get_option( 'ecard_captcha' ) === 1 ) {
+            if ( ! isset( $_POST['ecard_captcha_answer'] ) || ! ecard_validate_captcha( $_POST['ecard_captcha_answer'] ) ) {
+                echo '<div class="ecard-error">' . __( 'Invalid CAPTCHA answer. Please try again.', 'ecards' ) . '</div>';
+                return $output;
+            }
         }
 
         // begin user attachment (if any)
@@ -431,12 +440,18 @@ function wp_ecard_display_ecards( $atts ) {
         }
     }
 
+    // Generate new CAPTCHA if enabled
+    $captcha_data = null;
+    if ( (int) get_option( 'ecard_captcha' ) === 1 ) {
+        $captcha_data = ecard_generate_captcha();
+    }
+
     /**
      * Display eCard grid
      */
 
     // Inline Critical CSS
-    $output = '<style>.ecard-container input[type=text],.ecard-container input[type=email],.ecard-container input[type=submit],.ecard-container select,.ecard-container textarea{font-family:inherit;font-size:inherit;padding:8px;margin-bottom:4px;width:auto}.ecard-container select{height:auto}.ecard-confirmation{background-color:#7bdcb5;color:#000;padding:1.25em 2.375em}#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:50%}#ecard_send{padding:8px 16px}a.dropbox-dropin-btn,a.dropbox-dropin-btn:hover,a.dropbox-dropin-btn:link,a.dropbox-dropin-btn:visited{color:#636363}@media all and (max-width:720px){#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:100%!important}}</style>';
+    $output = '<style>.ecard-container input[type=text],.ecard-container input[type=email],.ecard-container input[type=submit],.ecard-container select,.ecard-container textarea{font-family:inherit;font-size:inherit;padding:8px;margin-bottom:4px;width:auto}.ecard-container select{height:auto}.ecard-confirmation{background-color:#7bdcb5;color:#000;padding:1.25em 2.375em}#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:50%}#ecard_send{padding:8px 16px}@media all and (max-width:720px){#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:100%!important}}</style>';
 
     // Inline custom CSS
     $output .= '<style>' .
@@ -500,6 +515,16 @@ function wp_ecard_display_ecards( $atts ) {
         $output .= '<script>document.addEventListener("DOMContentLoaded",function(){document.getElementById("ecard_consent")&&(document.getElementById("ecard_send").disabled=!0,document.getElementById("ecard_consent").addEventListener("click",function(){document.getElementById("ecard_consent").checked?document.getElementById("ecard_send").disabled=!1:document.getElementById("ecard_send").disabled=!0}))});</script>';
     }
 
+    // Add CAPTCHA field if enabled
+    if ( (int) get_option( 'ecard_captcha' ) === 1 && $captcha_data ) {
+        $output .= '<p>
+            <label for="ecard_captcha_answer">' . __('Security Check', 'ecards') . '</label><br>
+            <img src="' . esc_attr($captcha_data['image']) . '" alt="CAPTCHA" style="border: 1px solid #ccc; margin-bottom: 10px;"><br>
+            <input type="text" id="ecard_captcha_answer" name="ecard_captcha_answer" required maxlength="5" style="text-transform: uppercase;">
+            <br><small>' . __('Please enter the 5 characters shown in the image above.', 'ecards') . '</small>
+        </p>';
+    }
+
                 $output .= '<p>
                     <input type="hidden" name="ecard_referer" value="' . get_permalink() . '">
                     <input type="submit" id="ecard_send" name="ecard_send" value="' . $ecard_submit . '">
@@ -536,3 +561,67 @@ function ecards_settings_link( $links ) {
 $plugin = plugin_basename( __FILE__ );
 
 add_filter( "plugin_action_links_$plugin", 'ecards_settings_link' );
+
+// Add CAPTCHA functions
+function ecard_generate_captcha() {
+    // Generate random string
+    $characters = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Excluding confusing characters
+    $string = '';
+    for ($i = 0; $i < 5; $i++) {
+        $string .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    
+    // Store the result in a transient
+    set_transient('ecard_captcha_' . get_current_user_id(), $string, 300); // 5 minutes expiry
+    
+    // Create image
+    $image = imagecreatetruecolor(150, 50);
+    if (!$image) {
+        return false;
+    }
+    
+    // Allocate colors
+    $bg = imagecolorallocate($image, 255, 255, 255);
+    $text_color = imagecolorallocate($image, 0, 0, 0);
+    $noise_color = imagecolorallocate($image, 200, 200, 200);
+    
+    // Fill background
+    imagefilledrectangle($image, 0, 0, 150, 50, $bg);
+    
+    // Add noise
+    for ($i = 0; $i < 100; $i++) {
+        imagesetpixel($image, rand(0, 150), rand(0, 50), $noise_color);
+    }
+    
+    // Add lines
+    for ($i = 0; $i < 3; $i++) {
+        imageline($image, rand(0, 150), rand(0, 50), rand(0, 150), rand(0, 50), $noise_color);
+    }
+    
+    // Add text
+    $font_size = 5;
+    $x = 20;
+    $y = 30;
+    imagestring($image, $font_size, $x, $y, $string, $text_color);
+    
+    // Output image
+    ob_start();
+    imagepng($image);
+    $image_data = ob_get_clean();
+    imagedestroy($image);
+    
+    if (empty($image_data)) {
+        return false;
+    }
+    
+    return [
+        'image' => 'data:image/png;base64,' . base64_encode($image_data),
+        'string' => $string
+    ];
+}
+
+function ecard_validate_captcha($answer) {
+    $stored_result = get_transient('ecard_captcha_' . get_current_user_id());
+    delete_transient('ecard_captcha_' . get_current_user_id());
+    return strtoupper($answer) === strtoupper($stored_result);
+}
