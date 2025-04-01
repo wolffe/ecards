@@ -27,6 +27,14 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
+= 5.6.0 =
+* Add Akar icons locally, as unpkg is too slow
+* Add CSV email address import
+* Add basic statistics
+* Update date functions to us gmdate()
+* Change eCard form to use CSS Grid columns
+* Allow administrators to delete scheduled eCards
+
 = 5.5.1 =
 * Add basic CAPTCHA feature
 * Update contextual help and help strings
