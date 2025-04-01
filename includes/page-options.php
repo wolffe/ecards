@@ -13,8 +13,11 @@ function ecard_options_page() {
         update_option( 'ecard_use_radius', (int) sanitize_text_field( $_POST['ecard_use_radius'] ) );
         update_option( 'ecard_color_scheme', sanitize_text_field( $_POST['ecard_color_scheme'] ) );
         update_option( 'ecard_color_accent', sanitize_text_field( $_POST['ecard_color_accent'] ) );
+        update_option( 'ecard_button_color', sanitize_text_field( $_POST['ecard_button_color'] ) );
+        update_option( 'ecard_button_background', sanitize_text_field( $_POST['ecard_button_background'] ) );
 
-        update_option( 'ecard_user_enable', sanitize_text_field( $_POST['ecard_user_enable'] ) );
+        // Check, unslash and sanitize
+        update_option( 'ecard_user_enable', isset( $_POST['ecard_user_enable'] ) ? (int) sanitize_text_field( $_POST['ecard_user_enable'] ) : 0 );
 
         update_option( 'ecard_redirection', sanitize_text_field( $_POST['ecard_redirection'] ) );
         update_option( 'ecard_page_thankyou', esc_url( $_POST['ecard_page_thankyou'] ) );
@@ -23,8 +26,9 @@ function ecard_options_page() {
 
         update_option( 'ecard_gdpr_privacy_policy_page', (int) $_POST['ecard_gdpr_privacy_policy_page'] );
 
-        update_option( 'ecard_shortcode_fix', sanitize_text_field( $_POST['ecard_shortcode_fix'] ) );
-        update_option( 'ecard_html_fix', sanitize_text_field( $_POST['ecard_html_fix'] ) );
+        // Check, unslash and sanitize
+        update_option( 'ecard_shortcode_fix', isset( $_POST['ecard_shortcode_fix'] ) ? (int) sanitize_text_field( $_POST['ecard_shortcode_fix'] ) : 0 );
+        update_option( 'ecard_html_fix', isset( $_POST['ecard_html_fix'] ) ? (int) sanitize_text_field( $_POST['ecard_html_fix'] ) : 0 );
 
         update_option( 'ecard_use_akismet', sanitize_text_field( $_POST['ecard_use_akismet'] ) );
         update_option( 'ecard_captcha', (int) sanitize_text_field( $_POST['ecard_captcha'] ) );
@@ -56,6 +60,7 @@ function ecard_options_page() {
         update_option( 'ecard_send_later', sanitize_text_field( $_POST['ecard_send_later'] ) );
 
         update_option( 'ecard_allow_cc', sanitize_text_field( $_POST['ecard_allow_cc'] ) );
+        update_option( 'ecard_allow_csv', (int) sanitize_text_field( $_POST['ecard_allow_csv'] ) );
 
         delete_option( 'ecard_noreply' );
 
@@ -117,6 +122,86 @@ function ecard_options_page() {
             <p><a href="https://codecanyon.net/item/wordpress-ecards/reviews/1051966" rel="external noopener follow" class="button button-secondary">Rate <b>eCards</b> on CodeCanyon</a></p>
 
             <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external noopener follow">official website</a>. <a href="https://getbutterfly.com/support/documentation/ecards/" class="button button-secondary">eCards Documentation</a></p>
+
+            <h2>eCard Statistics</h2>
+            <div style="width: 100%; height: 400px; margin: 20px 0;">
+                <canvas id="ecardsChart"></canvas>
+            </div>
+
+            <?php
+            // Get eCard data for the past 90 days
+            $args   = [
+                'post_type'      => 'ecard',
+                'posts_per_page' => -1,
+                'date_query'     => [
+                    [
+                        'after'     => '90 days ago',
+                        'inclusive' => true,
+                    ],
+                ],
+            ];
+            $ecards = get_posts( $args );
+
+            // Prepare data for the chart
+            $dates        = [];
+            $counts       = [];
+            $current_date = new DateTime();
+
+            // Initialize the last 90 days with zero counts
+            for ( $i = 90; $i >= 0; $i-- ) {
+                $date = clone $current_date;
+                $date->modify( "-{$i} days" );
+                $dates[]  = $date->format( 'Y-m-d' );
+                $counts[] = 0;
+            }
+
+            // Count eCards per day
+            foreach ( $ecards as $ecard ) {
+                $post_date = get_the_date( 'Y-m-d', $ecard->ID );
+                $index     = array_search( $post_date, $dates );
+                if ( $index !== false ) {
+                    ++$counts[ $index ];
+                }
+            }
+            ?>
+
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('ecardsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: <?php echo json_encode( $dates ); ?>,
+                        datasets: [{
+                            label: 'eCards Sent',
+                            data: <?php echo json_encode( $counts ); ?>,
+                            backgroundColor: '#9B59B6',
+                            borderColor: '#8E44AD',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'eCards Sent Over the Past 90 Days'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            </script>
 
             <h2>About eCards</h2>
             <p>
@@ -191,8 +276,8 @@ function ecard_options_page() {
                             <th scope="row"><label for="ecard_label">Card Behaviour</label></th>
                             <td>
                                 <select name="ecard_label" id="ecard_label">
-                                    <option value="0"<?php selected( (int) get_option( 'ecard_label' ), 0 ); ?>>Use source (large image) for eCard thumbnail</option>
                                     <option value="1"<?php selected( (int) get_option( 'ecard_label' ), 1 ); ?>>Use label behaviour for eCard thumbnail</option>
+                                    <option value="0"<?php selected( (int) get_option( 'ecard_label' ), 0 ); ?>>Use source (large image) for eCard thumbnail</option>
                                 </select>
                                 <br><small>Choose what happens when users click on eCards.</small>
                             </td>
@@ -252,20 +337,27 @@ function ecard_options_page() {
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="ecard_color_scheme">Card Colour Scheme</label></th>
+                            <th scope="row"><label><?php _e( 'Colours', 'ecards' ); ?></label></th>
                             <td>
-                                <select name="ecard_color_scheme" id="ecard_color_scheme">
-                                    <option value="light"<?php selected( (string) get_option( 'ecard_color_scheme' ), 'light' ); ?>>Light</option>
-                                    <option value="dark"<?php selected( (string) get_option( 'ecard_color_scheme' ), 'dark' ); ?>>Dark</option>
-                                </select>
-                                <br><small>Choose the radiobox colour scheme to match your theme.</small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row"><label for="ecard_color_accent">Card Accent Colour</label></th>
-                            <td>
-                                <input class="color-well" name="ecard_color_accent" type="text" value="<?php echo get_option( 'ecard_color_accent' ); ?>">
-                                <br><small>Choose the accent colour for your eCard cards.</small>
+                                <p>
+                                    <select name="ecard_color_scheme" id="ecard_color_scheme">
+                                        <option value="light"<?php selected( (string) get_option( 'ecard_color_scheme' ), 'light' ); ?>>Light</option>
+                                        <option value="dark"<?php selected( (string) get_option( 'ecard_color_scheme' ), 'dark' ); ?>>Dark</option>
+                                    </select>
+                                    <label for="ecard_color_scheme">Choose the colour scheme to match your theme.</label>
+                                </p>
+                                <p>
+                                    <input class="color-well" name="ecard_color_accent" type="text" value="<?php echo get_option( 'ecard_color_accent' ); ?>">
+                                    <label for="ecard_color_accent">Choose the accent colour for your eCard cards.</label>
+                                </p>
+                                <p>
+                                    <input class="color-well" name="ecard_button_color" type="text" value="<?php echo get_option( 'ecard_button_color' ); ?>">
+                                    <label for="ecard_button_color">Choose the button text colour for your eCard form button.</label>
+                                </p>
+                                <p>
+                                    <input class="color-well" name="ecard_button_background" type="text" value="<?php echo get_option( 'ecard_button_background' ); ?>">
+                                    <label for="ecard_button_background">Choose the button background colour for your eCard form button.</label>
+                                </p>
                             </td>
                         </tr>
 
@@ -596,6 +688,16 @@ function ecard_options_page() {
                                 <br><small>Display a checkbox to allow the sender to CC self</small>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row"><label for="ecard_allow_csv"><?php _e( 'CSV File Upload', 'ecards' ); ?></label></th>
+                            <td>
+                                <p>
+                                    <input type="checkbox" name="ecard_allow_csv" id="ecard_allow_csv" value="1" <?php checked( 1, (int) get_option( 'ecard_allow_csv' ) ); ?>> 
+                                    <label for="ecard_allow_csv"><?php _e( 'Enable CSV file upload', 'ecards' ); ?></label>
+                                </p>
+                                <small><?php _e( 'Allow users to upload CSV files containing email addresses', 'ecards' ); ?></small>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -623,10 +725,10 @@ function ecard_options_page() {
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="ecard_label_email_friend">Your friend's email address<br><small>(input label)</small></label></th>
+                            <th scope="row"><label for="ecard_label_email_friend">Recipient Email<br><small>(input label)</small></label></th>
                             <td>
                                 <input name="ecard_label_email_friend" id="ecard_label_email_friend" type="text" class="regular-text" value="<?php echo get_option( 'ecard_label_email_friend' ); ?>">
-                                <br><small>Default is "Your friend's email address"</small>
+                                <br><small>Default is "Recipient Email"</small>
                             </td>
                         </tr>
                         <tr>
@@ -701,7 +803,7 @@ function ecard_options_page() {
                 </table>
 
                 <hr>
-                <p><input type="submit" name="info_debug_update" class="button button-primary" value="<?php _e( 'Test/Save Changes', 'ecards' ); ?>"></p>
+                <p><input type="submit" name="info_debug_update" class="button button-primary" value="<?php _e( 'Send Email', 'ecards' ); ?>"></p>
             </form>
         <?php } ?>
     </div>
