@@ -51,3 +51,74 @@
     box-shadow: 0 0 0 1px var(--ecard-color-accent, #0000ff), 0.25em 0.25em 2em rgba(0, 0, 0, 0.25);
 }
 
+.ecard-container--inner small {
+    opacity: 0.6;
+}
+
+.ecards-ui--grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 2em;
+    margin: 1em 0;
+}
+@media only screen and (max-width: 768px) {
+    .ecards-ui--grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+.ecards-ui--grid > div {
+    padding: 1em;
+    background: oklch(0.6 0 0 / 0.10);
+    border-radius: var(--ecard-radius, 4px);
+}
+
+.ecards-ui--grid details,
+.ecards-ui--grid textarea,
+.ecards-ui--grid input[type="file"],
+.ecards-ui--grid input[type="text"],
+.ecards-ui--grid input[type="email"] {
+    width: 100%;
+    width: -webkit-fill-available;
+}
+
+.ecards-ui--grid input[type="submit"] {
+    background: var(--ecard-button-background, #3742fa);
+    color: var(--ecard-button-color, #ffffff);
+    border: 0 none;
+    border-radius: var(--ecard-radius, 4px);
+    cursor: pointer;
+    padding: 1em 2em;
+}
+/* Disabled style */
+.ecards-ui--grid input[type="submit"]:disabled {
+    opacity: 0.5;
+}
+
+details.ecards-ui--details summary {
+    list-style: none;
+    padding: 1em;
+    background: oklch(0.6 0 0 / 0.10);
+    cursor: pointer;
+
+    border: 1px solid oklch(0.2 0 0 / 0.35);
+    border-radius: var(--ecard-radius, 4px);
+}
+details.ecards-ui--details summary::marker,
+details.ecards-ui--details summary::-webkit-details-marker {
+    content: "";
+    display: none;
+}
+
+details.ecards-ui--details label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+details.ecards-ui--details input[type="file"] {
+    font-family: inherit;
+    font-size: inherit;
+    padding: 2em;
+    border: 3px dashed #a4b0be;
+    border-radius: var(--ecard-radius, 4px);
+}
