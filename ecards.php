@@ -71,7 +71,7 @@ if ( (string) get_option( 'ecard_html_fix' ) === 'on' ) {
 function ecards_install() {
     add_option( 'ecard_label_name_own', 'Your name' );
     add_option( 'ecard_label_email_own', 'Your email address' );
-    add_option( 'ecard_label_email_friend', 'Your friend email address' );
+    add_option( 'ecard_label_email_friend', 'Recipient Email' );
     add_option( 'ecard_label_message', 'eCard message' );
     add_option( 'ecard_label_send_time', 'Schedule this eCard' );
     add_option( 'ecard_label_cc', 'Send a copy to self' );
@@ -79,7 +79,7 @@ function ecards_install() {
     add_option( 'ecard_label_gdpr_privacy_policy_page', 'Check here to indicate that you have read and agree to our terms and conditions' );
     add_option( 'ecard_gdpr_privacy_policy_page', 0 );
     add_option( 'ecard_submit', 'Send eCard' );
-    add_option( 'ecard_label', 0 );
+    add_option( 'ecard_label', 1 );
     add_option( 'ecard_link_anchor', 'Click to see your eCard!' );
     add_option( 'ecard_redirection', 0 );
     add_option( 'ecard_page_thankyou', '' );
@@ -98,6 +98,17 @@ function ecards_install() {
     add_option( 'ecard_use_akismet', 'false' );
     add_option( 'ecard_columns', 3 );
     add_option( 'ecard_captcha', 0 );
+
+    add_option( 'ecard_allow_csv', 0 );
+    add_option( 'ecard_captcha', 0 );
+
+    add_option( 'ecard_use_shadow', 1 );
+    add_option( 'ecard_use_highlight', 1 );
+    add_option( 'ecard_use_radius', 4 );
+    add_option( 'ecard_color_scheme', 'light' );
+    add_option( 'ecard_color_accent', '#3742fa' );
+    add_option( 'ecard_button_background', '#3742fa' );
+    add_option( 'ecard_button_color', '#ffffff' );
 }
 
 register_activation_hook( __FILE__, 'ecards_install' );
@@ -105,6 +116,7 @@ register_activation_hook( __FILE__, 'ecards_install' );
 
 
 function ecards_enqueue_scripts() {
+    wp_register_style( 'akar-icons', plugins_url( '/assets/icons/akar-icons.css', __FILE__ ), [], '1.1.22' );
     wp_register_style( 'ecards-ui', plugins_url( '/css/ui.css', __FILE__ ), [], ECARDS_VERSION );
 }
 add_action( 'wp_enqueue_scripts', 'ecards_enqueue_scripts' );
@@ -188,6 +200,8 @@ function ecard_get_attachments( $ecid, $id_array ) {
 
 
 function wp_ecard_display_ecards( $atts ) {
+    wp_enqueue_style( 'akar-icons' );
+
     $attributes = shortcode_atts(
         [
             'id'         => '',
@@ -299,7 +313,36 @@ function wp_ecard_display_ecards( $atts ) {
         //
 
         if ( $ecard_send_behaviour === 1 ) {
-            $ecard_to = sanitize_email( $_POST['ecard_to'] );
+            $recipient_emails = [];
+
+            // Handle CSV file upload
+            if ( ! empty( $_FILES['email_csv']['name'] ) ) {
+                $file = $_FILES['email_csv'];
+                if ( $file['type'] === 'text/csv' || $file['type'] === 'application/vnd.ms-excel' ) {
+                    $recipient_emails = ecard_process_csv_file( $file );
+                }
+            }
+
+            // Handle email input field
+            if ( ! empty( $_POST['ecard_to'] ) ) {
+                $email_list = explode( ',', $_POST['ecard_to'] );
+                foreach ( $email_list as $email ) {
+                    $email = sanitize_email( trim( $email ) );
+                    if ( is_email( $email ) ) {
+                        $recipient_emails[] = $email;
+                    }
+                }
+            }
+
+            // Remove duplicates and empty values
+            $recipient_emails = array_unique( array_filter( $recipient_emails ) );
+
+            if ( empty( $recipient_emails ) ) {
+                echo '<div class="ecard-error">' . __( 'Please provide at least one valid email address.', 'ecards' ) . '</div>';
+                return $output;
+            }
+
+            $ecard_to = $recipient_emails;
         } elseif ( $ecard_send_behaviour === 0 ) {
             $ecard_to = sanitize_email( get_option( 'ecard_hardcoded_email' ) );
         }
@@ -423,7 +466,21 @@ function wp_ecard_display_ecards( $atts ) {
 
             if ( ! isset( $_POST['ecard_send_time_enable'] ) ) {
                 // mail sending
-                wp_mail( $ecard_to, $subject, $ecard_template, $headers );
+                if ( is_array( $ecard_to ) ) {
+                    foreach ( $ecard_to as $recipient ) {
+                        wp_mail( $recipient, $subject, $ecard_template, $headers );
+                    }
+                } else {
+                    // Check if it's a comma-separated list
+                    $emails = array_map( 'trim', explode( ',', $ecard_to ) );
+                    if ( count( $emails ) > 1 ) {
+                        foreach ( $emails as $recipient ) {
+                            wp_mail( $recipient, $subject, $ecard_template, $headers );
+                        }
+                    } else {
+                        wp_mail( $ecard_to, $subject, $ecard_template, $headers );
+                    }
+                }
 
                 if ( isset( $_POST['ecard_allow_cc'] ) ) {
                     wp_mail( $ecard_email_from, $subject, $ecard_template, $headers );
@@ -451,7 +508,14 @@ function wp_ecard_display_ecards( $atts ) {
      */
 
     // Inline Critical CSS
-    $output = '<style>.ecard-container input[type=text],.ecard-container input[type=email],.ecard-container input[type=submit],.ecard-container select,.ecard-container textarea{font-family:inherit;font-size:inherit;padding:8px;margin-bottom:4px;width:auto}.ecard-container select{height:auto}.ecard-confirmation{background-color:#7bdcb5;color:#000;padding:1.25em 2.375em}#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:50%}#ecard_send{padding:8px 16px}@media all and (max-width:720px){#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:100%!important}}</style>';
+    $output = '<style>
+    .ecard-container input[type=text],.ecard-container input[type=email],.ecard-container input[type=submit],.ecard-container select,.ecard-container textarea{font-family:inherit;font-size:inherit;padding:8px;margin-bottom:4px;width:auto}.ecard-container select{height:auto}.ecard-confirmation{background-color:#7bdcb5;color:#000;padding:1.25em 2.375em}@media all and (max-width:720px){#ecard_email_from,#ecard_from,#ecard_message,#ecard_to{width:100%!important}}
+    :root {
+        --ecard-color-accent: ' . get_option( 'ecard_color_accent' ) . ';
+        --ecard-button-color: ' . get_option( 'ecard_button_color' ) . ';
+        --ecard-button-background: ' . get_option( 'ecard_button_background' ) . ';
+    }
+    </style>';
 
     // Inline custom CSS
     $output .= '<style>' .
@@ -469,11 +533,17 @@ function wp_ecard_display_ecards( $atts ) {
             $output .= wp_nonce_field( 'ecard_send_nonce', 'ecard_nonce', true, false );
             $output .= ecard_get_attachments( get_the_ID(), $id_array );
 
+            $output .= '<div class="ecards-ui--grid">
+                <div>';
+
     if ( (int) get_option( 'ecard_user_enable' ) === 1 ) {
-        $output .= '<p><input type="file" name="file" id="file"></p>';
+        $output .= '<details class="ecards-ui--details">
+            <summary><i class="ai-cloud-upload"></i> ' . __( 'Upload Image', 'ecards' ) . '</summary>
+            <p><input type="file" name="file" id="file"></p>
+        </details>';
     }
 
-            $output .= '<div class="ecard-container--inner">
+            $output .= '
                 <p>
                     <label for="ecard_from">' . get_option( 'ecard_label_name_own' ) . '</label><br>
                     <input type="text" id="ecard_from" name="ecard_from" size="30" required>
@@ -484,18 +554,54 @@ function wp_ecard_display_ecards( $atts ) {
                 </p>';
 
     if ( $ecard_send_behaviour === 1 ) {
-        $output .= '<p>
-                        <label for="ecard_to">' . get_option( 'ecard_label_email_friend' ) . '</label><br>
-                        <input type="email" id="ecard_to" name="ecard_to" size="30" required>
-                    </p>';
+        $output .= '<details class="ecards-ui--details" name="recipient_emails" open>
+        <summary><i class="ai-envelope"></i> ' . get_option( 'ecard_label_email_friend' ) . '</summary>
+        <p>
+            <label for="ecard_to">' . get_option( 'ecard_label_email_friend' ) . '</label><br>
+            <input type="text" id="ecard_to" name="ecard_to" size="30" required 
+                placeholder="' . __( 'Enter multiple emails separated by commas', 'ecards' ) . '">
+            <br><small>' . __( 'You can enter multiple email addresses separated by commas', 'ecards' ) . '</small>
+        </p>
+        </details>';
+
+        // Only show CSV upload if enabled in settings
+        if ( (int) get_option( 'ecard_allow_csv' ) === 1 ) {
+            $output .= '<details class="ecards-ui--details" name="recipient_emails">
+            <summary><i class="ai-circle-plus"></i> ' . __( 'Add More Recipients', 'ecards' ) . '</summary>
+            <p>
+                <label for="email_csv">' . __( 'Upload a CSV file with email addresses', 'ecards' ) . '</label><br>
+                <input type="file" id="email_csv" name="email_csv" accept=".csv">
+                <br><small>' . __( 'Upload a CSV file containing email addresses (one per line or comma-separated)', 'ecards' ) . '</small>
+            </p>
+            </details>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const emailInput = document.getElementById("ecard_to");
+                    const csvInput = document.getElementById("email_csv");
+                    
+                    function updateEmailRequired() {
+                        emailInput.required = !csvInput.files.length;
+                    }
+                    
+                    csvInput.addEventListener("change", updateEmailRequired);
+                    updateEmailRequired(); // Initial check
+                });
+            </script>';
+        }
     }
+
+                $output .= '</div>
+                <div>';
 
                 $ecard_send_later = get_option( 'ecard_send_later' );
 
     if ( (int) $ecard_send_later === 1 ) {
-        $output .= '<p>
-                        <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option( 'ecard_label_send_time' ) . '</label> ' . ecard_datetime_picker() . '
-                    </p>';
+        $output .= '<details class="ecards-ui--details">
+            <summary><i class="ai-clock"></i> ' . __( 'Schedule', 'ecards' ) . '</summary>
+            <p>
+                <input type="checkbox" name="ecard_send_time_enable" id="ecard_send_time_enable" value="1"> <label for="ecard_send_time_enable">' . get_option( 'ecard_label_send_time' ) . '</label></p>' .
+                ecard_datetime_picker() .
+        '</details>';
     }
 
     if ( (int) $ecard_body_toggle === 1 ) {
@@ -624,4 +730,21 @@ function ecard_validate_captcha( $answer ) {
     $stored_result = get_transient( 'ecard_captcha_' . get_current_user_id() );
     delete_transient( 'ecard_captcha_' . get_current_user_id() );
     return strtoupper( $answer ) === strtoupper( $stored_result );
+}
+
+// Add this function to handle CSV file processing
+function ecard_process_csv_file( $file ) {
+    $emails = [];
+    if ( ( $handle = fopen( $file['tmp_name'], 'r' ) ) !== false ) {
+        while ( ( $data = fgetcsv( $handle ) ) !== false ) {
+            foreach ( $data as $email ) {
+                $email = sanitize_email( trim( $email ) );
+                if ( is_email( $email ) ) {
+                    $emails[] = $email;
+                }
+            }
+        }
+        fclose( $handle );
+    }
+    return array_unique( $emails );
 }
