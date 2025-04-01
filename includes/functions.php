@@ -166,10 +166,10 @@ function ecards_detach_callback() {
 
 
 function ecard_datetime_picker() {
-    $day       = date( 'd' );
-    $month     = date( 'm' );
-    $startyear = date( 'Y' );
-    $endyear   = date( 'Y' ) + 10;
+    $day       = gmdate( 'd' );
+    $month     = gmdate( 'm' );
+    $startyear = gmdate( 'Y' );
+    $endyear   = gmdate( 'Y' ) + 10;
     $months    = [ '', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
 
     $html = '<div class="ecard-datetime-picker" role="group" aria-label="' . esc_attr__( 'Select date and time to send the eCard', 'ecards' ) . '">';
