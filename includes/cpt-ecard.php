@@ -60,7 +60,6 @@ function wpe_ecard_cpt() {
         'capabilities'        => [
             'create_posts' => 'do_not_allow', // Removes support for the "Add New" function
         ],
-        'map_meta_cap'        => true, // Set to `false`, if users are not allowed to edit/delete existing posts
     ];
 
     register_post_type( 'ecard', $args );
