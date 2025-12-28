@@ -1,5 +1,6 @@
 @font-face {
     font-family: "akar-icons";
+    font-display: swap;
     src: url("akar-icons.ttf") format("truetype"),
 url("akar-icons.woff") format("woff"),
 url("akar-icons.svg") format("svg");

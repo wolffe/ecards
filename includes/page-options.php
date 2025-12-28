@@ -119,7 +119,6 @@ function ecard_options_page() {
 
         <?php if ( $active_tab === 'ecards_dashboard' ) { ?>
             <h2>Thank you for using eCards!</h2>
-            <p><a href="https://codecanyon.net/item/wordpress-ecards/reviews/1051966" rel="external noopener follow" class="button button-secondary">Rate <b>eCards</b> on CodeCanyon</a></p>
 
             <p>For support, feature requests and bug reporting, please visit the <a href="https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/" rel="external noopener follow">official website</a>. <a href="https://getbutterfly.com/support/documentation/ecards/" class="button button-secondary">eCards Documentation</a></p>
 
@@ -623,7 +622,7 @@ function ecard_options_page() {
                 <p><b>Note:</b> To avoid your email address being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address.</p>
                 <p>Emails sometimes end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up a dedicated email address.</p>
 
-                <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP Mailer/Email Log</a>.</p>
+                <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP</a>.</p>
  
                 <table class="form-table">
                     <tbody>
@@ -789,7 +788,7 @@ function ecard_options_page() {
         <?php } elseif ( $active_tab === 'ecards_diagnostics' ) { ?>
             <form method="post" action="">
                 <h3 class="title"><?php _e( 'Diagnostics', 'ecards' ); ?></h3>
-                <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP Mailer/Email Log</a>.</p>
+                <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP</a>.</p>
                 <table class="form-table">
                     <tbody>
                         <tr>
