@@ -3,14 +3,17 @@ Contributors: butterflymedia
 Tags: ecard, electronic card, flash card, greeting card, postcard, akismet
 License: GPLv3
 Requires at least: 4.9
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.6.1
+Stable tag: 5.6.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
+Donate link: https://buymeacoffee.com/wolffe
 
 == Description ==
 eCards is a WordPress plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar.
+
+Browse our [WordPress Plugins](https://getbutterfly.com/wordpress-plugins/).
 
 There are two ways you can use this plugin:
 
@@ -26,5 +29,9 @@ There are two ways you can use this plugin:
 5. A new eCard Collections menu will appear in WordPress
 
 == Changelog ==
+
+= 5.6.2 =
+* Tested with WordPress 7.1.
+* Added WordPress Plugins and donation links to the plugin documentation.
 
 See changelog on https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/

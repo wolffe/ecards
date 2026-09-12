@@ -5,9 +5,9 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images or upload your own.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com/
-Version: 5.6.1
+Version: 5.6.2
 Requires at least: 4.9
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
 License: GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'ECARDS_VERSION', '5.6.1' );
+define( 'ECARDS_VERSION', '5.6.2' );
 
 require plugin_dir_path( __FILE__ ) . '/includes/updater.php';
 
