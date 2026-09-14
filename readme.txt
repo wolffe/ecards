@@ -30,8 +30,4 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
-= 5.6.2 =
-* Tested with WordPress 7.1.
-* Added WordPress Plugins and donation links to the plugin documentation.
-
 See changelog on https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
