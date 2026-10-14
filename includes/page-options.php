@@ -4,6 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function ecard_options_page() {
+    if ( isset( $_POST['info_settings_update'] ) || isset( $_POST['info_payment_update'] ) || isset( $_POST['info_designer_update'] ) || isset( $_POST['info_email_update'] ) || isset( $_POST['info_labels_update'] ) || isset( $_POST['info_debug_update'] ) || isset( $_POST['ecards_save'] ) ) {
+        check_admin_referer( 'ecard_admin_settings', 'ecard_admin_settings_nonce' );
+    }
+
     if ( isset( $_POST['info_settings_update'] ) ) {
         update_option( 'ecard_label', (int) sanitize_text_field( $_POST['ecard_label'] ) );
         update_option( 'ecard_columns', (int) sanitize_text_field( $_POST['ecard_columns'] ) );
@@ -42,12 +46,13 @@ function ecard_options_page() {
         echo '<div id="message" class="updated notice is-dismissible"><p>' . __( 'Options updated successfully!', 'ecards' ) . '</p></div>';
     } elseif ( isset( $_POST['info_payment_update'] ) ) {
         update_option( 'ecard_restrictions', sanitize_text_field( $_POST['ecard_restrictions'] ) );
-        update_option( 'ecard_restrictions_message', esc_html( stripslashes_deep( $_POST['ecard_restrictions_message'] ) ) );
+        update_option( 'ecard_restrictions_message', wp_kses_post( wp_unslash( $_POST['ecard_restrictions_message'] ) ) );
 
         echo '<div id="message" class="updated notice is-dismissible"><p>' . __( 'Options updated successfully!', 'ecards' ) . '</p></div>';
     } elseif ( isset( $_POST['info_designer_update'] ) ) {
-        update_option( 'ecard_title', stripslashes( $_POST['ecard_title'] ) );
-        update_option( 'ecard_template', wp_kses_post( $_POST['ecard_template'] ) );
+        update_option( 'ecard_title', sanitize_text_field( wp_unslash( $_POST['ecard_title'] ) ) );
+        update_option( 'ecard_template', wp_kses_post( wp_unslash( $_POST['ecard_template'] ) ) );
+        update_option( 'ecard_theme', array_key_exists( $_POST['ecard_theme'] ?? '', ecard_themes() ) ? sanitize_key( $_POST['ecard_theme'] ) : '' );
         update_option( 'ecard_image_size_email', sanitize_text_field( $_POST['ecard_image_size_email'] ) );
         update_option( 'ecard_body_toggle', sanitize_text_field( $_POST['ecard_body_toggle'] ) );
 
@@ -61,6 +66,7 @@ function ecard_options_page() {
 
         update_option( 'ecard_allow_cc', sanitize_text_field( $_POST['ecard_allow_cc'] ) );
         update_option( 'ecard_allow_csv', (int) sanitize_text_field( $_POST['ecard_allow_csv'] ) );
+        update_option( 'ecard_retention_days', max( 0, (int) ( $_POST['ecard_retention_days'] ?? 0 ) ) );
 
         delete_option( 'ecard_noreply' );
 
@@ -72,7 +78,7 @@ function ecard_options_page() {
         update_option( 'ecard_label_message', stripslashes( sanitize_text_field( $_POST['ecard_label_message'] ) ) );
         update_option( 'ecard_label_send_time', stripslashes( sanitize_text_field( $_POST['ecard_label_send_time'] ) ) );
         update_option( 'ecard_label_cc', stripslashes( sanitize_text_field( $_POST['ecard_label_cc'] ) ) );
-        update_option( 'ecard_label_success', sanitize_text_field( $_POST['ecard_label_success'] ) );
+        update_option( 'ecard_label_success', sanitize_text_field( wp_unslash( $_POST['ecard_label_success'] ) ) );
         update_option( 'ecard_label_gdpr_privacy_policy_page', stripslashes( sanitize_text_field( $_POST['ecard_label_gdpr_privacy_policy_page'] ) ) );
         update_option( 'ecard_submit', stripslashes( sanitize_text_field( $_POST['ecard_submit'] ) ) );
         update_option( 'ecard_link_anchor', stripslashes( sanitize_text_field( $_POST['ecard_link_anchor'] ) ) );
@@ -81,7 +87,9 @@ function ecard_options_page() {
     } elseif ( isset( $_POST['info_debug_update'] ) ) {
         $headers[] = 'Content-Type: text/html;';
 
-        if ( ! empty( $_POST['ecard_test_email'] ) && wp_mail( $_POST['ecard_test_email'], 'eCards test email', 'Testing eCards plugin...', $headers ) ) {
+        $test_email = sanitize_email( wp_unslash( $_POST['ecard_test_email'] ?? '' ) );
+
+        if ( is_email( $test_email ) && ecard_mail( $test_email, 'eCards test email', '<p>Testing eCards plugin...</p>', $headers ) ) {
             echo '<div id="message" class="updated notice is-dismissible"><p>Mail sent successfully. Check your inbox.</p></div>';
         } else {
             echo '<div id="message" class="updated notice notice-error is-dismissible"><p>Mail not sent. Check your server configuration.</p></div>';
@@ -100,7 +108,7 @@ function ecard_options_page() {
             echo '<div id="message" class="error notice is-dismissible"><p>' . __( 'You have not set an email template for eCards! <a href="' . admin_url( 'options-general.php?page=ecards&tab=designer' ) . '">Click here</a> to set it.', 'ecards' ) . '</p></div>';
         }
 
-        $active_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'ecards_dashboard';
+        $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'ecards_dashboard';
         $page_tab   = 'edit.php?post_type=ecard&page=ecard_options_page&tab=ecards_';
         ?>
 
@@ -115,6 +123,7 @@ function ecard_options_page() {
             <a href="<?php echo $page_tab; ?>members" class="nav-tab <?php echo $active_tab === 'ecards_members' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Restrictions', 'ecards' ); ?></a>
             <a href="<?php echo $page_tab; ?>labels" class="nav-tab <?php echo $active_tab === 'ecards_labels' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Labels', 'ecards' ); ?></a>
             <a href="<?php echo $page_tab; ?>diagnostics" class="nav-tab <?php echo $active_tab === 'ecards_diagnostics' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Diagnostics', 'ecards' ); ?></a>
+            <a href="<?php echo $page_tab; ?>generator" class="nav-tab <?php echo $active_tab === 'ecards_generator' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Shortcode Generator', 'ecards' ); ?></a>
         </h2>
 
         <?php if ( $active_tab === 'ecards_dashboard' ) { ?>
@@ -265,6 +274,7 @@ function ecard_options_page() {
             </script>
 
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <h3 class="title"><?php _e( 'eCards Settings', 'ecards' ); ?></h3>
 
                 <p>eCars are displayed in a grid, as Cards with a selectable radiobox inside.</p>
@@ -378,7 +388,7 @@ function ecard_options_page() {
                                         $wpcom_api_key = get_option( 'wordpress_api_key' );
 
                                         if ( ! empty( $wpcom_api_key ) ) {
-                                            echo '<p><small>Your Akismet plugin is installed and working properly. Your API key is <code>' . $wpcom_api_key . '</code>.</small></p>';
+                                            echo '<p><small>Your Akismet plugin is installed and working properly. Your API key is <code>' . esc_html( str_repeat( '•', 8 ) . substr( $wpcom_api_key, -4 ) ) . '</code>.</small></p>';
                                         } else {
                                             echo '<p><small>Your Akismet plugin is installed but no API key is present. Please fix it.</small></p>';
                                         }
@@ -469,7 +479,8 @@ function ecard_options_page() {
             <?php
         } elseif ( $active_tab === 'ecards_css' ) {
             if ( isset( $_POST['ecards_save'] ) ) {
-                update_option( 'ecards_custom_css', $_POST['ecards_custom_css'] );
+                // Stored slashed (read back with stripslashes()); strip tags so it can't close the <style> element.
+                update_option( 'ecards_custom_css', wp_strip_all_tags( $_POST['ecards_custom_css'] ) );
 
                 echo '<div class="updated notice is-dismissible"><p>Settings updated successfully!</p></div>';
             }
@@ -491,6 +502,7 @@ function ecard_options_page() {
             </style>
 
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <table class="form-table">
                     <tbody>
                         <tr>
@@ -512,6 +524,7 @@ function ecard_options_page() {
         } elseif ( $active_tab === 'ecards_members' ) {
             ?>
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <h3 class="title"><?php _e( 'eCards Restrictions', 'ecards' ); ?></h3>
                 <p>Restricting access to members only requires a user to be logged into your WordPress site.</p>
                 <table class="form-table">
@@ -526,7 +539,7 @@ function ecard_options_page() {
                                     </select> <label for="ecard_restrictions_message">Add a guest message below, if you restrict access to members only.</label>
                                 </p>
                                 <p>
-                                    <textarea rows="8" autocomplete="off" name="ecard_restrictions_message" id="ecard_restrictions_message" class="large-text"><?php echo get_option( 'ecard_restrictions_message' ); ?></textarea>
+                                    <textarea rows="8" autocomplete="off" name="ecard_restrictions_message" id="ecard_restrictions_message" class="large-text"><?php echo esc_textarea( wp_unslash( htmlspecialchars_decode( (string) get_option( 'ecard_restrictions_message' ) ) ) ); ?></textarea>
                                 </p>
                             </td>
                         </tr>
@@ -541,6 +554,7 @@ function ecard_options_page() {
         } elseif ( $active_tab === 'ecards_designer' ) {
             ?>
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <h3 class="title"><?php _e( 'eCard Designer', 'ecards' ); ?></h3>
 
                 <table class="form-table">
@@ -587,7 +601,7 @@ function ecard_options_page() {
                             <th scope="row"><label for="ecard_template">Email template</label></th>
                             <td>
                                 <?php
-                                $ecard_template = get_option( 'ecard_template' );
+                                $ecard_template = wp_unslash( get_option( 'ecard_template' ) );
                                 wp_editor(
                                     $ecard_template,
                                     'ecard_template',
@@ -610,6 +624,17 @@ function ecard_options_page() {
                                 <br><small>Check the <a href="https://getbutterfly.com/support/documentation/ecards/#ecard-designer" rel="external">documentation section</a> for more Designer samples.</small>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row"><label for="ecard_theme"><?php _e( 'Seasonal theme', 'ecards' ); ?></label></th>
+                            <td>
+                                <select name="ecard_theme" id="ecard_theme">
+                                    <?php foreach ( ecard_themes() as $ecard_theme_key => $ecard_theme_label ) { ?>
+                                        <option value="<?php echo esc_attr( $ecard_theme_key ); ?>" <?php selected( (string) get_option( 'ecard_theme', '' ), $ecard_theme_key ); ?>><?php echo esc_html( $ecard_theme_label ); ?></option>
+                                    <?php } ?>
+                                </select>
+                                <br><small><?php _e( 'Wraps the designed email in a Christmas, New Year, birthday or thank-you frame. Override it per form with [ecard theme="birthday"].', 'ecards' ); ?></small>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -618,6 +643,7 @@ function ecard_options_page() {
             </form>
         <?php } elseif ( $active_tab === 'ecards_email' ) { ?>
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <h3 class="title"><?php _e( 'Email Settings', 'ecards' ); ?></h3>
                 <p><b>Note:</b> To avoid your email address being marked as spam, it is highly recommended that your "from" domain match your website. Some hosts may require that your "from" address be a legitimate address.</p>
                 <p>Emails sometimes end up in your spam (or junk) folder. Sometimes they don't arrive at all. While the latter may indicate a server issue, the former may easily be fixed by setting up a dedicated email address.</p>
@@ -697,6 +723,13 @@ function ecard_options_page() {
                                 <small><?php _e( 'Allow users to upload CSV files containing email addresses', 'ecards' ); ?></small>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row"><label for="ecard_retention_days"><?php _e( 'Delete sent eCards after', 'ecards' ); ?></label></th>
+                            <td>
+                                <input type="number" name="ecard_retention_days" id="ecard_retention_days" min="0" step="1" class="small-text" value="<?php echo (int) get_option( 'ecard_retention_days', 0 ); ?>"> <?php _e( 'days', 'ecards' ); ?>
+                                <br><small><?php _e( 'Sent eCard records (names, email addresses, messages) are deleted daily once they are older than this. Use 0 to keep them. Scheduled eCards are never deleted before they are sent.', 'ecards' ); ?></small>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -705,6 +738,7 @@ function ecard_options_page() {
             </form>
         <?php } elseif ( $active_tab === 'ecards_labels' ) { ?>
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <h3 class="title"><?php _e( 'Labels', 'ecards' ); ?></h3>
                 <p>Use the labels to personalize or translate your eCards form.</p>
                 <table class="form-table">
@@ -787,6 +821,7 @@ function ecard_options_page() {
             </form>
         <?php } elseif ( $active_tab === 'ecards_diagnostics' ) { ?>
             <form method="post" action="">
+                <?php wp_nonce_field( 'ecard_admin_settings', 'ecard_admin_settings_nonce' ); ?>
                 <h3 class="title"><?php _e( 'Diagnostics', 'ecards' ); ?></h3>
                 <p>If your host blocks the <code>mail()</code> function, or if you notice errors or restrictions, configure your WordPress site to use SMTP. We recommend <a href="https://wordpress.org/plugins/post-smtp/" rel="external">Post SMTP</a>.</p>
                 <table class="form-table">
@@ -804,6 +839,8 @@ function ecard_options_page() {
                 <hr>
                 <p><input type="submit" name="info_debug_update" class="button button-primary" value="<?php _e( 'Send Email', 'ecards' ); ?>"></p>
             </form>
+        <?php } elseif ( $active_tab === 'ecards_generator' ) { ?>
+            <?php echo ecard_shortcode_generator(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static admin markup. ?>
         <?php } ?>
     </div>
     <?php

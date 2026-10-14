@@ -5,7 +5,7 @@ License: GPLv3
 Requires at least: 4.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 5.6.2
+Stable tag: 5.7.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://buymeacoffee.com/wolffe
@@ -30,4 +30,18 @@ There are two ways you can use this plugin:
 
 == Changelog ==
 
-See changelog on https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
+= 5.7.0 =
+* SECURITY: User uploads are validated as images and stored through the Media Library (previously any file type could be uploaded to wp-content/uploads)
+* SECURITY: Fix CAPTCHA bypass (an expired answer matched an empty one; guests shared one answer)
+* SECURITY: Add nonces to all settings forms; escape values in the eCard details meta box; mask the Akismet API key; strip tags from custom CSS
+* SECURITY: Sanitise the sender name used in Reply-To, the message HTML, the scheduling date and CSV uploads (checked by extension and size)
+* FEATURE: Honeypot field and per-visitor rate limit (10 per hour, `ecard_rate_limit` filter)
+* FEATURE: Plain-text alternative part in every email
+* FEATURE: Seasonal email themes (Christmas, New Year, birthday, thank you), also per form with `[ecard theme="..."]`
+* FEATURE: Shortcode generator with Media Library picker and drag-and-drop ordering
+* FEATURE: Delete sent eCard records after a number of days (Email Options)
+* FIX: A form rendered twice on one page (excerpts, SEO plugins) could send the same eCard twice
+* FIX: Slashes before apostrophes in the email template, subject and labels
+* FIX: Scheduled eCards to several recipients
+
+See older changes on https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/

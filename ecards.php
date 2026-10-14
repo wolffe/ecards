@@ -5,7 +5,7 @@ Plugin URI: https://getbutterfly.com/wordpress-plugins/wordpress-ecards-plugin/
 Description: eCards is a plugin used to send electronic cards to friends. It can be implemented in a page, a post, a custom post or the sidebar. eCards makes it quick and easy for you to send an eCard in three steps. Just choose your favorite eCard, add your personal message and send it to any email address. Use preset images or upload your own.
 Author: Ciprian Popescu
 Author URI: https://getbutterfly.com/
-Version: 5.6.2
+Version: 5.7.0
 Requires at least: 4.9
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'ECARDS_VERSION', '5.6.2' );
+define( 'ECARDS_VERSION', '5.7.0' );
 
 require plugin_dir_path( __FILE__ ) . '/includes/updater.php';
 
@@ -209,11 +209,13 @@ function wp_ecard_display_ecards( $atts ) {
         [
             'id'         => '',
             'collection' => 0,
+            'theme'      => (string) get_option( 'ecard_theme', '' ),
         ],
         $atts
     );
 
     $send_success = 0;
+    $output       = '';
 
     $id_array = [];
 
@@ -258,51 +260,59 @@ function wp_ecard_display_ecards( $atts ) {
     $ecard_title          = get_option( 'ecard_title' );
 
     // Get eCard template
-    $ecard_template = wpautop( get_option( 'ecard_template' ) );
+    // Older versions stored the template slashed.
+    $ecard_template = wpautop( wp_unslash( get_option( 'ecard_template' ) ) );
 
     $ecard_body_toggle      = (int) get_option( 'ecard_body_toggle' );
     $ecard_image_size_email = get_option( 'ecard_image_size_email' );
 
     // send eCard routine
     // since eCards 2.2.0
-    if ( isset( $_POST['ecard_send'] ) ) {
+    if ( isset( $_POST['ecard_send'] ) && ! did_action( 'ecard_sent' ) ) {
         // Verify nonce
-        if ( ! isset( $_POST['ecard_nonce'] ) || ! wp_verify_nonce( $_POST['ecard_nonce'], 'ecard_send_nonce' ) ) {
+        if ( ! isset( $_POST['ecard_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['ecard_nonce'] ), 'ecard_send_nonce' ) ) {
             echo '<div class="ecard-error">' . __( 'Security check failed. Please try again.', 'ecards' ) . '</div>';
             return $output;
         }
 
         // Validate CAPTCHA if enabled
         if ( (int) get_option( 'ecard_captcha' ) === 1 ) {
-            if ( ! isset( $_POST['ecard_captcha_answer'] ) || ! ecard_validate_captcha( $_POST['ecard_captcha_answer'] ) ) {
+            if ( ! isset( $_POST['ecard_captcha_answer'], $_POST['ecard_captcha_token'] ) || ! ecard_validate_captcha( sanitize_text_field( wp_unslash( $_POST['ecard_captcha_answer'] ) ), sanitize_key( $_POST['ecard_captcha_token'] ) ) ) {
                 echo '<div class="ecard-error">' . __( 'Invalid CAPTCHA answer. Please try again.', 'ecards' ) . '</div>';
                 return $output;
             }
         }
 
+        // Fires once per request so a shortcode rendered twice (excerpts, SEO plugins) can't send duplicates.
+        do_action( 'ecard_sent' );
+
+        if ( ecard_is_spam_request() ) {
+            echo '<div class="ecard-error" role="alert">' . esc_html__( 'Too many eCards were sent from your connection. Please try again later.', 'ecards' ) . '</div>';
+            return $output;
+        }
+
         // begin user attachment (if any)
         $no_attachments = 1;
+        $attach_id      = 0;
 
         if ( ! empty( $_FILES['file']['name'] ) ) {
+            if ( ! ecard_is_valid_image_upload( 'file' ) ) {
+                echo '<div class="ecard-error">' . __( 'Please upload a JPEG, PNG, GIF, WebP or AVIF image.', 'ecards' ) . '</div>';
+                return $output;
+            }
+
             require_once ABSPATH . 'wp-admin/includes/image.php';
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            require_once ABSPATH . 'wp-admin/includes/media.php';
+
+            $attach_id = media_handle_upload( 'file', 0 );
+
+            if ( is_wp_error( $attach_id ) ) {
+                echo '<div class="ecard-error">' . esc_html( $attach_id->get_error_message() ) . '</div>';
+                return $output;
+            }
 
             $no_attachments = 0;
-            move_uploaded_file( $_FILES['file']['tmp_name'], WP_CONTENT_DIR . '/uploads/' . basename( $_FILES['file']['name'] ) );
-
-            // attach user uploaded image to eCard custom post
-            $filetype = wp_check_filetype( basename( $_FILES['file']['name'] ), null );
-
-            $attachment = [
-                'post_mime_type' => $filetype['type'],
-                'post_title'     => $_FILES['file']['name'],
-                'post_content'   => '',
-                'post_status'    => 'inherit',
-            ];
-
-            $attach_id   = wp_insert_attachment( $attachment, WP_CONTENT_DIR . '/uploads/' . $_FILES['file']['name'] );
-            $attach_data = wp_generate_attachment_metadata( $attach_id, WP_CONTENT_DIR . '/uploads/' . $_FILES['file']['name'] );
-
-            wp_update_attachment_metadata( $attach_id, $attach_data );
         }
         // end user attachment
 
@@ -321,14 +331,14 @@ function wp_ecard_display_ecards( $atts ) {
             // Handle CSV file upload
             if ( ! empty( $_FILES['email_csv']['name'] ) ) {
                 $file = $_FILES['email_csv'];
-                if ( $file['type'] === 'text/csv' || $file['type'] === 'application/vnd.ms-excel' ) {
+                if ( strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) ) === 'csv' && is_uploaded_file( $file['tmp_name'] ) && (int) $file['size'] <= MB_IN_BYTES ) {
                     $recipient_emails = ecard_process_csv_file( $file );
                 }
             }
 
             // Handle email input field
             if ( ! empty( $_POST['ecard_to'] ) ) {
-                $email_list = explode( ',', $_POST['ecard_to'] );
+                $email_list = explode( ',', wp_unslash( $_POST['ecard_to'] ) );
                 foreach ( $email_list as $email ) {
                     $email = sanitize_email( trim( $email ) );
                     if ( is_email( $email ) ) {
@@ -351,11 +361,17 @@ function wp_ecard_display_ecards( $atts ) {
         }
 
         // check if <Mail From> fields are filled in
-        $ecard_from          = sanitize_text_field( $_POST['ecard_from'] );
-        $ecard_email_from    = sanitize_email( $_POST['ecard_email_from'] );
-        $ecard_email_message = wpautop( stripslashes( $_POST['ecard_message'] ) );
+        // Commas/quotes/angle brackets would let a sender name inject extra Reply-To addresses.
+        $ecard_from          = trim( str_replace( [ ',', ';', '"', '<', '>' ], '', sanitize_text_field( wp_unslash( $_POST['ecard_from'] ?? '' ) ) ) );
+        $ecard_email_from    = sanitize_email( wp_unslash( $_POST['ecard_email_from'] ?? '' ) );
+        $ecard_email_message = wpautop( wp_kses_post( wp_unslash( $_POST['ecard_message'] ?? '' ) ) );
 
-        $ecard_referer = esc_url( $_POST['ecard_referer'] );
+        if ( ! is_email( $ecard_email_from ) ) {
+            echo '<div class="ecard-error">' . __( 'Please provide a valid email address.', 'ecards' ) . '</div>';
+            return $output;
+        }
+
+        $ecard_referer = esc_url( wp_unslash( $_POST['ecard_referer'] ?? '' ) );
         if ( isset( $_POST['ecard_pick_me'] ) ) {
             $ecard_attachment = wp_get_attachment_link( sanitize_text_field( $_POST['ecard_pick_me'] ), $ecard_image_size_email, true, false, $ecard_link_anchor );
         } else {
@@ -377,10 +393,10 @@ function wp_ecard_display_ecards( $atts ) {
             $ecard_image = $ecard_pick_me;
         } else {
             $image       = wp_get_attachment_image_src( $attach_id, $ecard_image_size_email );
-            $ecard_image = '<img src="' . $image[0] . '" alt="" style="max-width: 100%;">';
+            $ecard_image = $image ? '<img src="' . esc_url( $image[0] ) . '" alt="" style="max-width: 100%;">' : '';
         }
 
-        $ecard_content = sanitize_text_field( $_POST['ecard_include_content'] );
+        $ecard_content = sanitize_text_field( wp_unslash( $_POST['ecard_include_content'] ?? '' ) );
 
         // eCard Designer
         $ecard_template = str_replace( '[name]', $ecard_from, $ecard_template );
@@ -391,6 +407,7 @@ function wp_ecard_display_ecards( $atts ) {
         $ecard_template = str_replace( '[ecard-url]', $ecard_url, $ecard_template );
         $ecard_template = str_replace( '[ecard-content]', $ecard_content, $ecard_template );
         $ecard_template = str_replace( '[ecard-referrer]', $ecard_referer, $ecard_template );
+        $ecard_template = ecard_theme_wrap( $ecard_template, $attributes['theme'] );
         //
 
         $subject = sanitize_text_field( $ecard_title );
@@ -417,7 +434,7 @@ function wp_ecard_display_ecards( $atts ) {
                 $current_datetime = current_datetime();
                 $current_datetime = $current_datetime->format( 'Y/m/d H:i:s' );
 
-                $ecard_built_date = $_POST['ecard_send_time_year'] . '-' . $_POST['ecard_send_time_month'] . '-' . $_POST['ecard_send_time_day'] . ' ' . $_POST['ecard_send_time_hour'] . ':00';
+                $ecard_built_date = sprintf( '%04d-%02d-%02d %02d:00', (int) $_POST['ecard_send_time_year'], (int) $_POST['ecard_send_time_month'], (int) $_POST['ecard_send_time_day'], (int) $_POST['ecard_send_time_hour'] );
                 $ecard_send_time  = strtotime( $ecard_built_date );
                 $ecard_send_time  = gmdate( 'Y-m-d H:i:s', $ecard_send_time );
 
@@ -459,10 +476,10 @@ function wp_ecard_display_ecards( $atts ) {
             add_post_meta( $ecard_id, 'ecard_email_sender', $ecard_email_from, true );
             add_post_meta( $ecard_id, 'ecard_email_recipient', $ecard_to, true );
             if ( isset( $_POST['ecard_allow_cc'] ) ) {
-                add_post_meta( $ecard_id, 'ecard_email_cc', $_POST['ecard_allow_cc'], true );
+                add_post_meta( $ecard_id, 'ecard_email_cc', 'on', true );
             }
 
-            $ecard_content_converted = str_replace( '[name]', $ecard_from, $_POST['ecard_include_content'] );
+            $ecard_content_converted = str_replace( '[name]', $ecard_from, $ecard_content );
             $ecard_content_converted = str_replace( '[email]', $ecard_email_from, $ecard_content_converted );
 
             add_post_meta( $ecard_id, 'ecard_content', sanitize_text_field( $ecard_content_converted ), true );
@@ -471,22 +488,22 @@ function wp_ecard_display_ecards( $atts ) {
                 // mail sending
                 if ( is_array( $ecard_to ) ) {
                     foreach ( $ecard_to as $recipient ) {
-                        wp_mail( $recipient, $subject, $ecard_template, $headers );
+                        ecard_mail( $recipient, $subject, $ecard_template, $headers );
                     }
                 } else {
                     // Check if it's a comma-separated list
                     $emails = array_map( 'trim', explode( ',', $ecard_to ) );
                     if ( count( $emails ) > 1 ) {
                         foreach ( $emails as $recipient ) {
-                            wp_mail( $recipient, $subject, $ecard_template, $headers );
+                            ecard_mail( $recipient, $subject, $ecard_template, $headers );
                         }
                     } else {
-                        wp_mail( $ecard_to, $subject, $ecard_template, $headers );
+                        ecard_mail( $ecard_to, $subject, $ecard_template, $headers );
                     }
                 }
 
                 if ( isset( $_POST['ecard_allow_cc'] ) ) {
-                    wp_mail( $ecard_email_from, $subject, $ecard_template, $headers );
+                    ecard_mail( $ecard_email_from, $subject, $ecard_template, $headers );
                 }
             }
 
@@ -522,7 +539,7 @@ function wp_ecard_display_ecards( $atts ) {
 
     // Inline custom CSS
     $output .= '<style>' .
-        stripslashes( get_option( 'ecards_custom_css' ) ) .
+        wp_strip_all_tags( stripslashes( get_option( 'ecards_custom_css' ) ) ) .
     '</style>';
 
     if ( (int) $send_success === 1 ) {
@@ -613,7 +630,7 @@ function wp_ecard_display_ecards( $atts ) {
         $output .= '<input type="hidden" name="ecard_message">';
     }
 
-                $output .= '<input type="hidden" name="ecard_include_content" value="' . strip_tags( strip_shortcodes( get_the_content() ) ) . '">';
+                $output .= '<input type="hidden" name="ecard_include_content" value="' . esc_attr( wp_strip_all_tags( strip_shortcodes( get_the_content() ) ) ) . '">';
 
     if ( get_option( 'ecard_allow_cc' ) === 'on' ) {
         $output .= '<p><input type="checkbox" name="ecard_allow_cc" id="ecard_allow_cc"> <label for="ecard_allow_cc">' . get_option( 'ecard_label_cc' ) . '</label></p>';
@@ -629,14 +646,15 @@ function wp_ecard_display_ecards( $atts ) {
         $output .= '<p>
             <label for="ecard_captcha_answer">' . __( 'Security Check', 'ecards' ) . '</label><br>
             <img src="' . esc_attr( $captcha_data['image'] ) . '" alt="CAPTCHA" style="border: 1px solid #ccc; margin-bottom: 10px;"><br>
+            <input type="hidden" name="ecard_captcha_token" value="' . esc_attr( $captcha_data['token'] ) . '">
             <input type="text" id="ecard_captcha_answer" name="ecard_captcha_answer" required maxlength="5" style="text-transform: uppercase;">
             <br><small>' . __( 'Please enter the 5 characters shown in the image above.', 'ecards' ) . '</small>
         </p>';
     }
 
-                $output .= '<p>
-                    <input type="hidden" name="ecard_referer" value="' . get_permalink() . '">
-                    <input type="submit" id="ecard_send" name="ecard_send" value="' . $ecard_submit . '">
+                $output .= ecard_honeypot_field() . '<p>
+                    <input type="hidden" name="ecard_referer" value="' . esc_url( get_permalink() ) . '">
+                    <input type="submit" id="ecard_send" name="ecard_send" value="' . esc_attr( $ecard_submit ) . '">
                 </p>
             </div>
         </form>
@@ -645,7 +663,7 @@ function wp_ecard_display_ecards( $atts ) {
     if ( (int) get_option( 'ecard_restrictions' ) === 0 || (int) get_option( 'ecard_restrictions' ) === 1 && is_user_logged_in() ) {
         return $output;
     } elseif ( (int) get_option( 'ecard_restrictions' ) === 1 && ! is_user_logged_in() ) {
-        $output = get_option( 'ecard_restrictions_message' );
+        $output = wp_kses_post( htmlspecialchars_decode( (string) get_option( 'ecard_restrictions_message' ) ) );
     }
 
     return $output;
@@ -680,8 +698,9 @@ function ecard_generate_captcha() {
         $string .= $characters[ rand( 0, strlen( $characters ) - 1 ) ];
     }
 
-    // Store the result in a transient
-    set_transient( 'ecard_captcha_' . get_current_user_id(), $string, 300 ); // 5 minutes expiry
+    // Store the result in a transient, keyed per form so concurrent guests don't share one answer
+    $token = strtolower( wp_generate_password( 20, false ) );
+    set_transient( 'ecard_captcha_' . $token, $string, 300 ); // 5 minutes expiry
 
     // Create image
     $image = imagecreatetruecolor( 150, 50 );
@@ -726,13 +745,15 @@ function ecard_generate_captcha() {
     return [
         'image'  => 'data:image/png;base64,' . base64_encode( $image_data ),
         'string' => $string,
+        'token'  => $token,
     ];
 }
 
-function ecard_validate_captcha( $answer ) {
-    $stored_result = get_transient( 'ecard_captcha_' . get_current_user_id() );
-    delete_transient( 'ecard_captcha_' . get_current_user_id() );
-    return strtoupper( $answer ) === strtoupper( $stored_result );
+function ecard_validate_captcha( $answer, $token ) {
+    $stored_result = (string) get_transient( 'ecard_captcha_' . $token );
+    delete_transient( 'ecard_captcha_' . $token );
+
+    return $stored_result !== '' && hash_equals( strtoupper( $stored_result ), strtoupper( $answer ) );
 }
 
 // Add this function to handle CSV file processing

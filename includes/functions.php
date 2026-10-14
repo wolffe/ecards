@@ -31,6 +31,18 @@ function ecards_set_content_type( $content_type ) {
     return 'text/html';
 }
 
+function ecard_is_valid_image_upload( $field ) {
+    $file = $_FILES[ $field ] ?? null;
+
+    if ( ! is_array( $file ) || (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) !== UPLOAD_ERR_OK || ! is_uploaded_file( $file['tmp_name'] ) ) {
+        return false;
+    }
+
+    $check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
+
+    return in_array( $check['type'], [ 'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif' ], true );
+}
+
 function ecard_check_spam( $content ) {
     // Innocent until proven guilty
     $is_spam = false;
@@ -108,13 +120,15 @@ function ecard_send_later( $ecard_id ) {
     $headers[] = 'Content-Type: text/html;';
     $headers[] = 'X-Mailer: WordPress/eCards;';
 
-    if ( (string) $ecard_to !== '' ) {
-        wp_mail( $ecard_to, $subject, $ecard_email_message, $headers );
+    if ( ! empty( $ecard_to ) ) {
+        foreach ( (array) $ecard_to as $recipient ) {
+            ecard_mail( $recipient, $subject, $ecard_email_message, $headers );
+        }
     }
 
     $ecard_email_cc = get_post_meta( $ecard_id, 'ecard_email_cc', true );
     if ( ! empty( $ecard_email_cc ) ) {
-        wp_mail( $ecard_email_from, $subject, $ecard_email_message, $headers );
+        ecard_mail( $ecard_email_from, $subject, $ecard_email_message, $headers );
     }
 }
 
@@ -273,17 +287,216 @@ function ecards_details_metabox_callback( $post ) {
     ?>
 
     <p>
-        <input type="text" style="width: 100%;" value="<?php echo $ecard_name; ?>" readonly>
+        <input type="text" style="width: 100%;" value="<?php echo esc_attr( $ecard_name ); ?>" readonly>
     </p>
     <p>
-        <input type="email" style="width: 100%;" value="<?php echo $ecard_email_sender; ?>" readonly>
+        <input type="email" style="width: 100%;" value="<?php echo esc_attr( $ecard_email_sender ); ?>" readonly>
     </p>
     <p>
-        <input type="email" style="width: 100%;" value="<?php echo $ecard_email_recipient; ?>" readonly>
+        <input type="text" style="width: 100%;" value="<?php echo esc_attr( implode( ', ', (array) $ecard_email_recipient ) ); ?>" readonly>
     </p>
     <p>
-        <textarea style="width: 100%;" rows="6" readonly><?php echo $ecard_content; ?></textarea>
+        <textarea style="width: 100%;" rows="6" readonly><?php echo esc_textarea( $ecard_content ); ?></textarea>
     </p>
 
     <?php
+}
+
+/**
+ * Delete sent eCard records older than the retention setting (0 keeps them forever).
+ */
+function ecard_cleanup_old_records() {
+    $days = (int) get_option( 'ecard_retention_days', 0 );
+
+    if ( $days < 1 ) {
+        return;
+    }
+
+    $old = get_posts(
+        [
+            'post_type'      => 'ecard',
+            'post_status'    => [ 'private', 'publish' ],
+            'fields'         => 'ids',
+            'posts_per_page' => 200,
+            'no_found_rows'  => true,
+            'date_query'     => [ [ 'before' => $days . ' days ago' ] ],
+        ]
+    );
+
+    foreach ( $old as $ecard_id ) {
+        wp_delete_post( $ecard_id, true );
+    }
+}
+add_action( 'ecard_cleanup', 'ecard_cleanup_old_records' );
+
+function ecard_schedule_cleanup() {
+    if ( ! wp_next_scheduled( 'ecard_cleanup' ) ) {
+        wp_schedule_event( time(), 'daily', 'ecard_cleanup' );
+    }
+}
+add_action( 'init', 'ecard_schedule_cleanup' );
+
+/*
+ * Shared with eCards Lite (keep both copies identical apart from the text domain).
+ */
+
+/**
+ * Honeypot field: hidden from people and assistive tech, filled in by most bots.
+ */
+function ecard_honeypot_field() {
+    return '<p class="ecard-hp" aria-hidden="true" style="position:absolute;left:-9999px"><label for="ecard_website">Website</label><input type="text" id="ecard_website" name="ecard_website" tabindex="-1" autocomplete="off"></p>';
+}
+
+/**
+ * Honeypot and per-IP rate limit (filter `ecard_rate_limit`, default 10 cards per hour).
+ */
+function ecard_is_spam_request() {
+    if ( ! empty( $_POST['ecard_website'] ) ) {
+        return true;
+    }
+
+    $ip    = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) filter_var( wp_unslash( $_SERVER['REMOTE_ADDR'] ), FILTER_VALIDATE_IP ) : '';
+    $key   = 'ecard_rate_' . md5( $ip . wp_salt() );
+    $count = (int) get_transient( $key );
+
+    if ( $count >= (int) apply_filters( 'ecard_rate_limit', 10 ) ) {
+        return true;
+    }
+
+    set_transient( $key, $count + 1, HOUR_IN_SECONDS );
+
+    return false;
+}
+
+/**
+ * wp_mail() with a plain-text alternative part, which helps deliverability and text-only clients.
+ */
+function ecard_mail( $to, $subject, $html, $headers ) {
+    $alt = static function ( $mailer ) use ( $html ) {
+        $text            = preg_replace( [ '~<br\s*/?>~i', '~</(p|div|tr|h[1-6])>~i' ], [ "\n", "\n\n" ], $html );
+        $mailer->AltBody = trim( html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES ) );
+    };
+
+    add_action( 'phpmailer_init', $alt );
+    $sent = wp_mail( $to, $subject, $html, $headers );
+    remove_action( 'phpmailer_init', $alt );
+
+    return $sent;
+}
+
+/**
+ * Admin shortcode generator: pick images from the Media Library, drag to reorder, copy [ecard id="..."].
+ */
+function ecard_shortcode_generator() {
+    wp_enqueue_media();
+
+    $themes = '';
+
+    foreach ( ecard_themes() as $key => $label ) {
+        $themes .= '<option value="' . esc_attr( $key ) . '">' . esc_html( $key === '' ? __( 'Default (from Email settings)', 'ecards' ) : $label ) . '</option>';
+    }
+
+    return '<h3>' . esc_html__( 'Shortcode Generator', 'ecards' ) . '</h3>
+    <p>' . esc_html__( 'Choose the card images, drag them into the order you want, then copy the shortcode into any post or page.', 'ecards' ) . '</p>
+    <p><button type="button" class="button button-primary" id="ecard-gen-pick">' . esc_html__( 'Choose images', 'ecards' ) . '</button></p>
+    <ul id="ecard-gen-list" style="display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0 0 16px;padding:0" aria-label="' . esc_attr__( 'Selected images (drag to reorder)', 'ecards' ) . '"></ul>
+    <p><label for="ecard-gen-theme">' . esc_html__( 'Email theme', 'ecards' ) . '</label><br><select id="ecard-gen-theme">' . $themes . '</select></p>
+    <p><label for="ecard-gen-output">' . esc_html__( 'Shortcode', 'ecards' ) . '</label><br><input type="text" id="ecard-gen-output" class="large-text code" value="[ecard]" readonly></p>
+    <p><button type="button" class="button" id="ecard-gen-copy">' . esc_html__( 'Copy shortcode', 'ecards' ) . '</button> <span id="ecard-gen-status" role="status"></span></p>
+    <script type="module">
+        const list = document.getElementById("ecard-gen-list");
+        const output = document.getElementById("ecard-gen-output");
+        const theme = document.getElementById("ecard-gen-theme");
+        let dragged;
+
+        const build = () => {
+            const ids = [...list.children].map((item) => item.dataset.id);
+            output.value = `[ecard${ids.length ? ` id="${ids.join(",")}"` : ""}${theme.value ? ` theme="${theme.value}"` : ""}]`;
+        };
+
+        const frame = wp.media({ title: "' . esc_js( __( 'Choose eCard images', 'ecards' ) ) . '", library: { type: "image" }, multiple: "add" });
+
+        frame.on("select", () => {
+            list.replaceChildren(...frame.state().get("selection").map((attachment) => {
+                const { id, alt, sizes, url } = attachment.toJSON();
+                const item = Object.assign(document.createElement("li"), { draggable: true, tabIndex: 0 });
+
+                item.dataset.id = id;
+                item.style.cursor = "move";
+                item.append(Object.assign(document.createElement("img"), { src: sizes?.thumbnail?.url ?? url, alt: alt || `#${id}`, width: 100, height: 100 }));
+                return item;
+            }));
+            build();
+        });
+
+        list.addEventListener("dragstart", (event) => { dragged = event.target.closest("li"); });
+        list.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            const target = event.target.closest("li");
+
+            if (target && target !== dragged) {
+                target.before(dragged);
+            }
+        });
+        list.addEventListener("drop", (event) => {
+            event.preventDefault();
+            build();
+        });
+        list.addEventListener("keydown", (event) => {
+            const item = event.target.closest("li");
+
+            if (event.key === "ArrowLeft" && item?.previousElementSibling) {
+                item.previousElementSibling.before(item);
+            } else if (event.key === "ArrowRight" && item?.nextElementSibling) {
+                item.nextElementSibling.after(item);
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            item.focus();
+            build();
+        });
+
+        theme.addEventListener("change", build);
+        document.getElementById("ecard-gen-pick").addEventListener("click", () => frame.open());
+        document.getElementById("ecard-gen-copy").addEventListener("click", async () => {
+            await navigator.clipboard.writeText(output.value);
+            document.getElementById("ecard-gen-status").textContent = "' . esc_js( __( 'Copied!', 'ecards' ) ) . '";
+        });
+    </script>
+    <p class="description">' . esc_html__( 'Tip: focus an image and use the left and right arrow keys to move it.', 'ecards' ) . '</p>';
+}
+
+function ecard_themes() {
+    return [
+        ''          => __( 'None', 'ecards' ),
+        'christmas' => __( 'Christmas', 'ecards' ),
+        'new-year'  => __( 'New Year', 'ecards' ),
+        'birthday'  => __( 'Birthday', 'ecards' ),
+        'thank-you' => __( 'Thank you', 'ecards' ),
+    ];
+}
+
+/**
+ * Wrap the email body in an email-safe (table, inline styles) seasonal frame.
+ */
+function ecard_theme_wrap( $html, $theme ) {
+    $palette = [
+        'christmas' => [ '#b3001b', '#fff8f0', '&#127876;' ],
+        'new-year'  => [ '#1f2a44', '#fdf6e3', '&#10024;' ],
+        'birthday'  => [ '#d6336c', '#fff0f6', '&#127874;' ],
+        'thank-you' => [ '#2b8a3e', '#f4fbf5', '&#128144;' ],
+    ];
+
+    if ( ! isset( $palette[ $theme ] ) ) {
+        return $html;
+    }
+
+    [ $accent, $background, $emoji ] = $palette[ $theme ];
+
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' . $background . ';"><tr><td align="center" style="padding:24px 12px;">'
+        . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-top:6px solid ' . $accent . ';border-radius:8px;"><tr><td style="padding:24px;font-family:Georgia,serif;font-size:16px;line-height:1.6;color:#222222;">'
+        . '<p style="margin:0 0 16px;font-size:32px;line-height:1;text-align:center;">' . $emoji . '</p>' . $html
+        . '</td></tr></table></td></tr></table>';
 }
